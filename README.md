@@ -75,3 +75,5 @@ Los resultados son una ayuda para la evaluación ergonómica y no sustituyen el 
 ## Licencia
 
 [MIT](LICENSE) © 2026 Leonardo
+
+Los iconos de la interfaz están basados en [Lucide](https://lucide.dev) (licencia ISC, © Lucide Contributors). Los pictogramas de postura son propios del proyecto.
