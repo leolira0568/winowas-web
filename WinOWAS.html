@@ -1,0 +1,639 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>WinOWAS</title>
+<style>
+:root{
+  --bg:#f3f2ef; --surface:#fcfcfb; --surface-2:#f7f6f3; --line:#dcdad3; --line-soft:#ebe9e3;
+  --ink:#0b0b0b; --ink-2:#52514e; --ink-3:#7c7a74;
+  --accent:#2a78d6; --accent-ink:#ffffff; --accent-soft:#e3eefb;
+  --c1:#0ca30c; --c2:#fab219; --c3:#ec835a; --c4:#d03b3b;
+  --c1-soft:#d8f0d8; --c2-soft:#fdeec9; --c3-soft:#fbe0d4; --c4-soft:#f5d3d3;
+  --radius:10px;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font:15px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+button,input,select{font:inherit;color:inherit}
+button{cursor:pointer}
+h2{font-size:18px;margin:0 0 12px}
+h3{font-size:15px;margin:0 0 10px}
+.muted{color:var(--ink-2)}
+.small{font-size:13px}
+
+/* Barra superior */
+.top{position:sticky;top:0;z-index:5;background:#1f2a37;color:#fff;display:flex;flex-wrap:wrap;gap:8px 16px;align-items:center;padding:10px 16px}
+.brand{font-weight:700;font-size:18px;letter-spacing:.2px}
+.brand .fname{font-weight:400;font-size:14px;opacity:.8;margin-left:8px}
+.brand .dirty{color:#fab219;margin-left:4px}
+.top .actions{display:flex;flex-wrap:wrap;gap:6px;margin-left:auto}
+.top .actions button{background:#2f3d4f;border:1px solid #435469;color:#fff;border-radius:8px;padding:6px 12px}
+.top .actions button:hover{background:#3a4a5f}
+.tabs{display:flex;gap:2px;overflow-x:auto;background:#e6e4de;padding:0 12px;border-bottom:1px solid var(--line)}
+.tabs button{background:none;border:0;padding:12px 14px;border-bottom:3px solid transparent;color:var(--ink-2);white-space:nowrap}
+.tabs button.on{color:var(--ink);border-bottom-color:var(--accent);font-weight:600}
+main{max-width:1180px;margin:0 auto;padding:16px}
+section.tab{display:none}
+section.tab.on{display:block}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:16px;margin-bottom:16px}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px}
+.btn{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:8px 14px}
+.btn:hover{background:var(--surface-2)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink);font-weight:600}
+.btn.primary:hover{filter:brightness(1.08)}
+.btn.danger{color:var(--c4)}
+.btn:disabled{opacity:.45;cursor:default}
+label.field{display:block;margin-bottom:10px}
+label.field span{display:block;font-size:13px;color:var(--ink-2);margin-bottom:3px}
+input[type=text],input[type=number],select{width:100%;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:#fff}
+.phase-row{display:flex;gap:8px;align-items:center;margin-bottom:8px}
+.phase-row .num{width:28px;color:var(--ink-3);text-align:right}
+.phase-row input{flex:1}
+
+/* Observación */
+.obs-head{display:flex;flex-wrap:wrap;gap:16px;align-items:center;justify-content:space-between}
+.clock{font-variant-numeric:tabular-nums;font-size:34px;font-weight:700;min-width:110px}
+.clock.alert{color:var(--c4);animation:pulse .5s ease-in-out 3}
+@keyframes pulse{50%{opacity:.3}}
+.code-display{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.code-digits{display:flex;gap:4px}
+.code-digits span{display:inline-grid;place-items:center;width:40px;height:48px;border:2px solid var(--line);border-radius:8px;background:#fff;font-size:24px;font-weight:700;font-variant-numeric:tabular-nums}
+.code-digits span.next{border-color:var(--accent)}
+.parts{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-top:14px}
+.part h3{display:flex;justify-content:space-between}
+.opt{display:flex;width:100%;text-align:left;gap:10px;align-items:center;background:#fff;border:1px solid var(--line);border-radius:8px;padding:9px 10px;margin-bottom:6px;min-height:44px}
+.opt:hover{border-color:var(--accent)}
+.opt.sel{background:var(--accent-soft);border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent)}
+.opt b{display:inline-grid;place-items:center;min-width:26px;height:26px;border-radius:6px;background:var(--surface-2);border:1px solid var(--line-soft);font-variant-numeric:tabular-nums}
+.obs-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:6px}
+.recent{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.recent span{font-variant-numeric:tabular-nums;padding:3px 8px;border-radius:6px;background:var(--surface-2);border:1px solid var(--line-soft);font-size:13px}
+
+/* Categorías */
+.cat{display:inline-flex;align-items:center;gap:6px;font-weight:600;white-space:nowrap}
+.cat i{display:inline-grid;place-items:center;width:22px;height:22px;border-radius:6px;font-style:normal;font-size:13px;color:#111}
+.cat i.k1{background:var(--c1);color:#fff}.cat i.k2{background:var(--c2)}.cat i.k3{background:var(--c3)}.cat i.k4{background:var(--c4);color:#fff}
+
+/* Gráficas */
+.stack{display:flex;gap:2px;height:34px;border-radius:6px;overflow:hidden;background:var(--line-soft)}
+.stack div{display:grid;place-items:center;font-size:13px;font-weight:600;min-width:0;overflow:hidden;white-space:nowrap}
+.stack .k1{background:var(--c1);color:#fff}.stack .k2{background:var(--c2)}.stack .k3{background:var(--c3)}.stack .k4{background:var(--c4);color:#fff}
+.stack.thin{height:14px;border-radius:4px}
+.legend{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:10px;margin-top:14px}
+.legend > div{display:flex;gap:10px;align-items:flex-start}
+.legend p{margin:0;font-size:13px;color:var(--ink-2)}
+table{border-collapse:collapse;width:100%}
+th,td{padding:7px 8px;border-bottom:1px solid var(--line-soft);text-align:left;vertical-align:middle}
+th{font-size:13px;color:var(--ink-2);font-weight:600}
+td.n,th.n{text-align:right;font-variant-numeric:tabular-nums}
+.tbl-wrap{overflow-x:auto}
+.cats4{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px}
+.cats4 .col{border:1px solid var(--line-soft);border-radius:8px;overflow:hidden}
+.cats4 .col h3{margin:0;padding:8px 10px;background:var(--surface-2);border-bottom:1px solid var(--line-soft)}
+.cats4 .col .scroll{max-height:320px;overflow-y:auto}
+.bp-row{display:grid;grid-template-columns:minmax(150px,1.3fr) 2.2fr auto;gap:12px;align-items:center;padding:7px 0;border-bottom:1px solid var(--line-soft)}
+.bp-name{font-size:14px}
+.bp-name b{font-variant-numeric:tabular-nums;color:var(--ink-3);margin-right:6px}
+.track{position:relative;height:22px;display:flex;gap:2px;border-radius:4px;overflow:hidden}
+.track .band{height:100%}
+.track .band.k1{background:var(--c1-soft)}.track .band.k2{background:var(--c2-soft)}.track .band.k3{background:var(--c3-soft)}.track .band.k4{background:var(--c4-soft)}
+.track .val{position:absolute;left:0;top:7px;height:8px;background:var(--ink);border-radius:0 4px 4px 0}
+.bp-out{min-width:130px;text-align:right;font-variant-numeric:tabular-nums;display:flex;gap:8px;justify-content:flex-end;align-items:center}
+.scale{display:grid;grid-template-columns:minmax(150px,1.3fr) 2.2fr auto;gap:12px;font-size:12px;color:var(--ink-3)}
+.scale .ticks{display:flex;justify-content:space-between}
+.scale .ph{min-width:130px}
+.filter{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:16px}
+.filter select{width:auto;min-width:220px}
+.empty{padding:30px;text-align:center;color:var(--ink-2)}
+.notice{background:var(--accent-soft);border:1px solid #bcd6f5;border-radius:8px;padding:10px 12px;margin-bottom:16px;display:flex;justify-content:space-between;gap:10px;align-items:center}
+.kbd{display:inline-block;border:1px solid var(--line);border-bottom-width:2px;border-radius:4px;padding:0 5px;font-size:12px;background:#fff}
+#print{display:none}
+
+@media (max-width:640px){
+  .bp-row,.scale{grid-template-columns:1fr;gap:4px}
+  .scale .lab,.scale .ph{display:none}
+  .bp-out{justify-content:flex-start}
+}
+@media print{
+  body{background:#fff}
+  .top,.tabs,main,.notice{display:none !important}
+  #print{display:block;padding:0}
+  .card{border:0;padding:0;margin-bottom:18px;break-inside:avoid}
+  .stack div,.track .band,.track .val,.cat i{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .cats4 .col .scroll{max-height:none}
+  h1{font-size:20px;margin:0 0 4px}
+}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="brand">WinOWAS<span class="fname" id="fname"></span><span class="dirty" id="dirty"></span></div>
+  <div class="actions">
+    <button data-act="new">Nuevo</button>
+    <button data-act="open">Abrir…</button>
+    <button data-act="join">Unir archivo…</button>
+    <button data-act="save">Guardar</button>
+    <button data-act="saveas">Guardar como…</button>
+    <button data-act="print">Imprimir</button>
+  </div>
+</header>
+<nav class="tabs" id="tabs">
+  <button data-tab="datos" class="on">Datos generales</button>
+  <button data-tab="observar">Observar</button>
+  <button data-tab="resultados">Categorías de acción</button>
+  <button data-tab="partes">Por parte del cuerpo</button>
+  <button data-tab="lista">Observaciones</button>
+  <button data-tab="ayuda">Ayuda</button>
+</nav>
+<main>
+  <div class="notice" id="restored" hidden><span>Se recuperó el trabajo que no se había guardado.</span><button class="btn" id="restoredClose">Cerrar</button></div>
+
+  <section class="tab on" id="tab-datos">
+    <div class="grid2">
+      <div class="card">
+        <h2>Información general</h2>
+        <div id="bgFields"></div>
+        <label class="field"><span>Intervalo de tiempo (segundos)</span><input type="number" min="1" id="interval"></label>
+      </div>
+      <div class="card">
+        <h2>Fases de trabajo</h2>
+        <div id="phases"></div>
+        <button class="btn" id="addPhase">Añadir fase</button>
+        <p class="small muted">Cada observación se asigna a una fase. Una fase solo se puede eliminar si no tiene observaciones.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="tab" id="tab-observar">
+    <div class="card">
+      <div class="obs-head">
+        <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap">
+          <div class="clock" id="clock">--</div>
+          <button class="btn primary" id="clockBtn">Iniciar reloj</button>
+          <span class="muted small" id="clockInfo"></span>
+        </div>
+        <div class="code-display">
+          <div class="code-digits" id="digits"></div>
+          <span id="liveCat"></span>
+        </div>
+      </div>
+      <div class="obs-actions">
+        <button class="btn primary" id="accept">Aceptar <span class="kbd">Enter</span></button>
+        <button class="btn" id="repeat">Repetir anterior <span class="kbd">R</span></button>
+        <button class="btn" id="takeback">Deshacer última <span class="kbd">Supr</span></button>
+        <button class="btn" id="clearSel">Limpiar <span class="kbd">Esc</span></button>
+        <span class="muted small" style="align-self:center" id="obsCount"></span>
+      </div>
+      <div class="recent" id="recent"></div>
+    </div>
+    <div class="parts" id="parts"></div>
+    <p class="small muted">Atajo de teclado: escribe los dígitos del código en orden (espalda, brazos, piernas, carga y, si hay varias fases, número de fase) y pulsa <span class="kbd">Enter</span>. <span class="kbd">Retroceso</span> borra el último dígito.</p>
+  </section>
+
+  <section class="tab" id="tab-resultados">
+    <div class="filter"><label>Material: <select class="phaseFilter"></select></label>
+      <label><input type="checkbox" id="printBg" checked> Incluir información general al imprimir</label>
+      <button class="btn" id="copyBtn">Copiar resultados</button></div>
+    <div id="results"></div>
+  </section>
+
+  <section class="tab" id="tab-partes">
+    <div class="filter"><label>Material: <select class="phaseFilter"></select></label></div>
+    <div id="bodyparts"></div>
+  </section>
+
+  <section class="tab" id="tab-lista">
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:10px">
+        <h2 style="margin:0">Observaciones registradas</h2>
+        <button class="btn danger" id="clearAll">Borrar todas</button>
+      </div>
+      <div class="tbl-wrap" id="obsTable"></div>
+    </div>
+  </section>
+
+  <section class="tab" id="tab-ayuda">
+    <div class="card" id="helpBox"></div>
+  </section>
+</main>
+<div id="print"></div>
+<input type="file" id="fileOpen" accept=".ows,.OWS" hidden>
+<input type="file" id="fileJoin" accept=".ows,.OWS" hidden>
+
+<script>
+"use strict";
+// ---- Datos del método OWAS (tomados de LUOKAT.DAT y LUOKAT3.DAT del WinOWAS original) ----
+const PARTS = [
+  {key:'b', name:'Espalda', opts:['Recta','Inclinada','Girada','Inclinada y girada']},
+  {key:'a', name:'Brazos', opts:['Ambos por debajo del hombro','Uno por encima del hombro','Ambos por encima del hombro']},
+  {key:'l', name:'Piernas', opts:['Sentado','De pie sobre ambas piernas rectas','De pie sobre una pierna recta','De pie, ambas rodillas flexionadas','De pie, una rodilla flexionada','Arrodillado','Caminando']},
+  {key:'w', name:'Carga', opts:['Menos de 10 kg','Entre 10 y 20 kg','Más de 20 kg']}
+];
+// Filas: espalda×brazos (12); columnas: piernas×carga (21)
+const TABLE = [
+ [1,1,1,1,1,1,1,1,1,2,2,2,2,2,2,1,1,1,1,1,1],
+ [1,1,1,1,1,1,1,1,1,2,2,2,2,2,2,1,1,1,1,1,1],
+ [1,1,1,1,1,1,1,1,1,2,2,3,2,2,3,1,1,1,1,1,2],
+ [2,2,3,2,2,3,2,2,3,3,3,3,3,3,3,2,2,2,2,3,3],
+ [2,2,3,2,2,3,2,3,3,3,4,4,3,4,4,3,3,4,2,3,4],
+ [3,3,4,2,2,3,3,3,3,3,4,4,4,4,4,4,4,4,2,3,4],
+ [1,1,1,1,1,1,1,1,2,3,3,3,4,4,4,1,1,1,1,1,1],
+ [2,2,3,1,1,1,1,1,2,4,4,4,4,4,4,3,3,3,1,1,1],
+ [2,2,3,1,1,1,2,3,3,4,4,4,4,4,4,4,4,4,1,1,1],
+ [2,3,3,2,2,3,2,2,3,4,4,4,4,4,4,4,4,4,2,3,4],
+ [3,3,4,2,3,4,3,3,4,4,4,4,4,4,4,4,4,4,2,3,4],
+ [4,4,4,2,3,4,3,3,4,4,4,4,4,4,4,4,4,4,2,3,4]
+];
+// Porcentaje del tiempo que corresponde a cada categoría (1..4), por postura de cada parte del cuerpo
+const BODY = {
+  b:[[100,0,0,0],[30,50,20,0],[20,30,50,0],[5,25,40,30]],
+  a:[[100,0,0,0],[30,50,20,0],[20,50,30,0]],
+  l:[[90,10,0,0],[80,20,0,0],[30,50,20,0],[5,25,40,30],[5,25,40,30],[20,30,50,0],[80,20,0,0]]
+};
+const CATS = [
+  {t:'Sin riesgo', d:'Postura normal y natural. No se requieren acciones.'},
+  {t:'Riesgo leve', d:'Postura con posible efecto dañino. Se requieren acciones correctivas en un futuro cercano.'},
+  {t:'Riesgo alto', d:'Postura con efecto dañino. Se requieren acciones correctivas lo antes posible.'},
+  {t:'Riesgo extremo', d:'Postura con efecto sumamente dañino. Se requieren acciones correctivas inmediatamente.'}
+];
+const BG_LABELS = ['Empresa','Departamento','Trabajo estudiado','Observador','Fecha','Hora'];
+
+const catOf = o => TABLE[(o.b-1)*3 + o.a-1][(o.l-1)*3 + o.w-1];
+function bodyCat(part, idx, pct){
+  const t = BODY[part][idx]; let cum = 0;
+  for (let i = 0; i < 4; i++){ cum += t[i]; if (t[i] > 0 && pct <= cum + 1e-9) return i+1; }
+  return 4;
+}
+const codeStr = o => `${o.b}${o.a}${o.l}${o.w}`;
+const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const pctFmt = v => (Math.round(v*10)/10).toLocaleString('es', {maximumFractionDigits:1}) + ' %';
+const catBadge = (k, label=true) => `<span class="cat"><i class="k${k}">${k}</i>${label ? esc(CATS[k-1].t) : ''}</span>`;
+const $ = s => document.querySelector(s);
+const $$ = s => [...document.querySelectorAll(s)];
+
+// ---- Estado ----
+function pad(n){ return String(n).padStart(2,'0'); }
+function blank(){
+  const d = new Date();
+  return {bg:['','','','',`${pad(d.getDate())}/${pad(d.getMonth()+1)}/${d.getFullYear()}`,`${pad(d.getHours())}:${pad(d.getMinutes())}`],
+          phases:[''], interval:30, obs:[]};
+}
+let S = blank(), fileName = '', fileHandle = null, dirty = false, phaseFilter = -1;
+const phaseName = i => (S.phases[i] && S.phases[i].trim()) || `Fase ${i+1}`;
+
+function changed(){ dirty = true; persist(); renderHeader(); }
+function persist(){ try{ localStorage.setItem('winowas.autosave', JSON.stringify({S, fileName, dirty})); }catch(e){} }
+
+// ---- Formato .OWS ----
+// !OWAS! / 6 textos entre comillas / nº de fases / nombres de fases / intervalo / nº de observaciones / códigos (espalda, brazos, piernas, carga, índice de fase desde 0)
+function parseOWS(text){
+  const L = text.split(/\r?\n/); let i = 0;
+  if ((L[i++]||'').trim() !== '!OWAS!') throw new Error('not owas');
+  const unq = s => { s = (s||'').trim(); return s.startsWith('"') && s.endsWith('"') && s.length >= 2 ? s.slice(1,-1) : s; };
+  const bg = []; for (let k = 0; k < 6; k++) bg.push(unq(L[i++]));
+  const np = parseInt(L[i++]) || 0;
+  const phases = []; for (let k = 0; k < np; k++) phases.push(unq(L[i++]));
+  if (!phases.length) phases.push('');
+  const interval = parseInt(L[i++]) || 30;
+  const n = parseInt(L[i++]) || 0;
+  const obs = [];
+  for (let k = 0; k < n; k++){
+    const s = (L[i++]||'').trim();
+    if (!/^\d{4,}$/.test(s)) continue;
+    const o = {b:+s[0], a:+s[1], l:+s[2], w:+s[3], p:parseInt(s.slice(4) || '0')};
+    if (o.b<1||o.b>4||o.a<1||o.a>3||o.l<1||o.l>7||o.w<1||o.w>3) continue;
+    if (o.p >= phases.length) while (phases.length <= o.p) phases.push('');
+    obs.push(o);
+  }
+  return {bg, phases, interval, obs};
+}
+function serializeOWS(st){
+  const q = s => '"' + String(s).replace(/"/g, "'") + '"';
+  const L = ['!OWAS!', ...st.bg.map(q), ` ${st.phases.length} `, ...st.phases.map(q), String(st.interval), String(st.obs.length), ...st.obs.map(o => codeStr(o) + o.p)];
+  return L.join('\r\n') + '\r\n';
+}
+// Los archivos originales usan la codificación de Windows (cp1252)
+const DEC = new TextDecoder('windows-1252');
+const ENC_MAP = (() => { const m = new Map(); for (let b = 0; b < 256; b++) m.set(DEC.decode(new Uint8Array([b])), b); return m; })();
+function encode1252(str){ const out = new Uint8Array(str.length); for (let i = 0; i < str.length; i++){ const b = ENC_MAP.get(str[i]); out[i] = b === undefined ? 63 : b; } return out; }
+
+// ---- Archivos ----
+function confirmDiscard(){ return !dirty || confirm('¿Desea descartar los cambios sin guardar?'); }
+function loadState(st, name, handle){
+  S = st; fileName = name; fileHandle = handle || null; dirty = false; phaseFilter = -1;
+  $('#restored').hidden = true;
+  persist(); renderAll();
+}
+async function readFile(file){ return DEC.decode(await file.arrayBuffer()); }
+async function pickFile(inputEl){
+  if (window.showOpenFilePicker){
+    try{
+      const [h] = await showOpenFilePicker({types:[{description:'Archivo OWAS', accept:{'application/octet-stream':['.ows']}}]});
+      return {file: await h.getFile(), handle: h};
+    }catch(e){ if (e.name === 'AbortError') return null; }
+  }
+  return new Promise(res => { inputEl.value = ''; inputEl.onchange = () => res(inputEl.files[0] ? {file: inputEl.files[0], handle: null} : null); inputEl.click(); });
+}
+async function openFile(){
+  if (!confirmDiscard()) return;
+  const r = await pickFile($('#fileOpen')); if (!r) return;
+  try{ loadState(parseOWS(await readFile(r.file)), r.file.name, r.handle); }
+  catch(e){ alert(`"${r.file.name}" no es un archivo OWAS.`); }
+}
+async function joinFile(){
+  const r = await pickFile($('#fileJoin')); if (!r) return;
+  let o; try{ o = parseOWS(await readFile(r.file)); } catch(e){ alert(`"${r.file.name}" no es un archivo OWAS.`); return; }
+  if (o.phases.length > S.phases.length){
+    if (!confirm('El archivo a unir tiene más fases de trabajo. ¿Continuar?')) return;
+    for (let i = S.phases.length; i < o.phases.length; i++) S.phases.push(o.phases[i]);
+  }
+  S.obs.push(...o.obs); changed(); renderAll();
+  alert(`Se añadieron ${o.obs.length} observaciones de "${r.file.name}".`);
+}
+async function saveFile(as){
+  const bytes = encode1252(serializeOWS(S));
+  const name = fileName || 'OWAS.OWS';
+  try{
+    if (!as && fileHandle){
+      const w = await fileHandle.createWritable(); await w.write(bytes); await w.close();
+    } else if (window.showSaveFilePicker){
+      const h = await showSaveFilePicker({suggestedName:name, types:[{description:'Archivo OWAS', accept:{'application/octet-stream':['.ows']}}]});
+      const w = await h.createWritable(); await w.write(bytes); await w.close();
+      fileHandle = h; fileName = h.name;
+    } else throw new Error('no fs api');
+  }catch(e){
+    if (e.name === 'AbortError') return;
+    let n = name;
+    if (as || !fileName){ n = prompt('Nombre del archivo:', name); if (!n) return; if (!/\.ows$/i.test(n)) n += '.OWS'; }
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob([bytes], {type:'application/octet-stream'}));
+    a.download = n; document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+    fileName = n;
+  }
+  dirty = false; persist(); renderHeader();
+}
+function newFile(){ if (!confirmDiscard()) return; loadState(blank(), '', null); showTab('datos'); }
+
+// ---- Interfaz: cabecera y pestañas ----
+function renderHeader(){
+  $('#fname').textContent = fileName ? '— ' + fileName : '— (sin nombre)';
+  $('#dirty').textContent = dirty ? '●' : '';
+  $('#dirty').title = dirty ? 'Cambios sin guardar' : '';
+}
+function showTab(t){
+  $$('#tabs button').forEach(b => b.classList.toggle('on', b.dataset.tab === t));
+  $$('section.tab').forEach(s => s.classList.toggle('on', s.id === 'tab-' + t));
+  if (t === 'resultados') renderResults();
+  if (t === 'partes') renderBodyParts();
+  if (t === 'lista') renderList();
+  if (t === 'observar') renderObserve();
+}
+
+// ---- Datos generales y fases ----
+function renderData(){
+  $('#bgFields').innerHTML = BG_LABELS.map((l,i) =>
+    `<label class="field"><span>${l}</span><input type="text" data-bg="${i}" value="${esc(S.bg[i]||'')}"${i===4?' placeholder="dd/mm/aaaa"':i===5?' placeholder="hh:mm"':''}></label>`).join('');
+  $('#interval').value = S.interval;
+  renderPhases();
+}
+function renderPhases(){
+  const used = S.phases.map((_,i) => S.obs.filter(o => o.p === i).length);
+  $('#phases').innerHTML = S.phases.map((p,i) =>
+    `<div class="phase-row"><span class="num">${i+1}</span><input type="text" data-phase="${i}" value="${esc(p)}" placeholder="Fase ${i+1}">
+     <span class="small muted" style="min-width:60px">${used[i]} obs.</span>
+     <button class="btn danger" data-delphase="${i}" ${S.phases.length < 2 || used[i] ? 'disabled' : ''} title="Eliminar fase">✕</button></div>`).join('');
+}
+document.addEventListener('input', e => {
+  const t = e.target;
+  if (t.dataset.bg !== undefined){ S.bg[+t.dataset.bg] = t.value; changed(); }
+  else if (t.dataset.phase !== undefined){ S.phases[+t.dataset.phase] = t.value; changed(); }
+  else if (t.id === 'interval'){ const v = parseInt(t.value); if (v > 0){ S.interval = v; changed(); } }
+});
+$('#addPhase').onclick = () => { S.phases.push(''); changed(); renderPhases(); fillPhaseFilters(); };
+$('#phases').addEventListener('click', e => {
+  const b = e.target.closest('[data-delphase]'); if (!b) return;
+  const k = +b.dataset.delphase;
+  S.phases.splice(k, 1); S.obs.forEach(o => { if (o.p > k) o.p--; });
+  changed(); renderPhases(); fillPhaseFilters();
+});
+
+// ---- Observación ----
+let sel = {b:0,a:0,l:0,w:0,p:0};
+const needPhase = () => S.phases.length > 1;
+function nextField(){ for (const p of PARTS) if (!sel[p.key]) return p.key; return null; }
+function renderObserve(){
+  if (sel.p >= S.phases.length) sel.p = 0;
+  let html = PARTS.map(p => `<div class="card part"><h3><span>${p.name}</span><span class="muted">${sel[p.key] || '–'}</span></h3>` +
+    p.opts.map((o,i) => `<button class="opt${sel[p.key]===i+1?' sel':''}" data-k="${p.key}" data-v="${i+1}"><b>${i+1}</b><span>${o}</span></button>`).join('') + '</div>').join('');
+  html += `<div class="card part"><h3><span>Fase de trabajo</span><span class="muted">${sel.p+1}</span></h3>` +
+    S.phases.map((p,i) => `<button class="opt${sel.p===i?' sel':''}" data-k="p" data-v="${i}"><b>${i+1}</b><span>${esc(phaseName(i))}</span></button>`).join('') + '</div>';
+  $('#parts').innerHTML = html;
+  const nf = nextField();
+  $('#digits').innerHTML = PARTS.map(p => `<span class="${nf===p.key?'next':''}" title="${p.name}">${sel[p.key]||''}</span>`).join('');
+  $('#liveCat').innerHTML = nf ? '<span class="muted small">Seleccione la postura</span>' : catBadge(catOf(sel));
+  $('#accept').disabled = !!nf;
+  $('#repeat').disabled = !S.obs.length;
+  $('#takeback').disabled = !S.obs.length;
+  $('#obsCount').textContent = `${S.obs.length} observaciones`;
+  $('#recent').innerHTML = S.obs.slice(-12).reverse().map(o => `<span title="${esc(phaseName(o.p))}">${codeStr(o)} · cat. ${catOf(o)}</span>`).join('');
+}
+$('#parts').addEventListener('click', e => {
+  const b = e.target.closest('.opt'); if (!b) return;
+  sel[b.dataset.k] = +b.dataset.v; renderObserve();
+});
+function accept(){
+  if (nextField()) return;
+  S.obs.push({...sel}); sel = {b:0,a:0,l:0,w:0,p:sel.p};
+  changed(); renderObserve();
+}
+function repeatLast(){ if (!S.obs.length) return; S.obs.push({...S.obs[S.obs.length-1]}); changed(); renderObserve(); }
+function takeBack(){ if (!S.obs.length) return; S.obs.pop(); changed(); renderObserve(); }
+function clearSel(){ sel = {b:0,a:0,l:0,w:0,p:sel.p}; renderObserve(); }
+$('#accept').onclick = accept; $('#repeat').onclick = repeatLast; $('#takeback').onclick = takeBack; $('#clearSel').onclick = clearSel;
+let phaseDigitPending = false;
+document.addEventListener('keydown', e => {
+  if (!$('#tab-observar').classList.contains('on')) return;
+  if (e.target.matches('input,select,textarea') || e.ctrlKey || e.metaKey || e.altKey) return;
+  const k = e.key;
+  if (/^[1-9]$/.test(k)){
+    const nf = nextField();
+    if (nf){
+      const max = PARTS.find(p => p.key === nf).opts.length;
+      if (+k <= max){ sel[nf] = +k; phaseDigitPending = needPhase() && !nextField(); renderObserve(); }
+    } else if (needPhase() && +k <= S.phases.length){ sel.p = +k - 1; phaseDigitPending = false; renderObserve(); }
+    e.preventDefault();
+  } else if (k === 'Enter'){ accept(); e.preventDefault(); }
+  else if (k === 'Backspace'){ for (const p of [...PARTS].reverse()) if (sel[p.key]){ sel[p.key] = 0; break; } renderObserve(); e.preventDefault(); }
+  else if (k === 'Escape') clearSel();
+  else if (k === 'Delete') takeBack();
+  else if (k === 'r' || k === 'R') repeatLast();
+});
+
+// Reloj de observación: avisa con un pitido cada intervalo
+let timer = null, nextAt = 0, audioCtx = null;
+function beep(){
+  try{
+    audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
+    const o = audioCtx.createOscillator(), g = audioCtx.createGain();
+    o.frequency.value = 880; g.gain.value = 0.15; o.connect(g); g.connect(audioCtx.destination);
+    o.start(); o.stop(audioCtx.currentTime + 0.25);
+  }catch(e){}
+}
+function tick(){
+  const left = Math.max(0, Math.ceil((nextAt - Date.now())/1000));
+  $('#clock').textContent = `${left} s`;
+  if (Date.now() >= nextAt){
+    beep(); nextAt += S.interval*1000;
+    const c = $('#clock'); c.classList.remove('alert'); void c.offsetWidth; c.classList.add('alert');
+  }
+}
+$('#clockBtn').onclick = () => {
+  if (timer){ clearInterval(timer); timer = null; $('#clockBtn').textContent = 'Iniciar reloj'; $('#clock').textContent = '--'; $('#clockInfo').textContent = ''; return; }
+  beep(); nextAt = Date.now() + S.interval*1000; timer = setInterval(tick, 200); tick();
+  $('#clockBtn').textContent = 'Detener reloj';
+  $('#clockInfo').textContent = `Aviso cada ${S.interval} s`;
+};
+
+// ---- Resultados ----
+function fillPhaseFilters(){
+  if (phaseFilter >= S.phases.length) phaseFilter = -1;
+  const opts = `<option value="-1">Todo el material</option>` + S.phases.map((p,i) => `<option value="${i}">${esc(phaseName(i))}</option>`).join('');
+  $$('.phaseFilter').forEach(s => { s.innerHTML = opts; s.value = phaseFilter; });
+}
+document.addEventListener('change', e => {
+  if (e.target.classList.contains('phaseFilter')){ phaseFilter = +e.target.value; fillPhaseFilters(); renderResults(); renderBodyParts(); }
+});
+const filtered = () => phaseFilter < 0 ? S.obs : S.obs.filter(o => o.p === phaseFilter);
+function catCounts(list){ const c = [0,0,0,0]; list.forEach(o => c[catOf(o)-1]++); return c; }
+function stackBar(counts, thin){
+  const n = counts.reduce((a,b) => a+b, 0); if (!n) return '';
+  return `<div class="stack${thin?' thin':''}">` + counts.map((c,i) => c ? `<div class="k${i+1}" style="flex:${c} 1 0" title="Categoría ${i+1} (${CATS[i].t}): ${c} obs., ${pctFmt(c/n*100)}">${!thin && c/n >= .08 ? pctFmt(c/n*100) : ''}</div>` : '').join('') + '</div>';
+}
+function bgBlock(){
+  return `<div class="card"><h2>Información general</h2><table>` +
+    BG_LABELS.map((l,i) => `<tr><th style="width:200px">${l}</th><td>${esc(S.bg[i]||'')}</td></tr>`).join('') +
+    `<tr><th>Intervalo de tiempo</th><td>${S.interval} s</td></tr></table></div>`;
+}
+function resultsHTML(){
+  const list = filtered(), n = list.length;
+  if (!n) return `<div class="card empty">No hay observaciones${phaseFilter >= 0 ? ' en esta fase' : ''}. Regístrelas en la pestaña «Observar» o abra un archivo .OWS.</div>`;
+  const c = catCounts(list);
+  let h = `<div class="card"><h2>Categorías de acción — ${phaseFilter < 0 ? 'todo el material' : esc(phaseName(phaseFilter))}</h2>
+    <p class="muted" style="margin-top:-6px">${n} observaciones${S.interval ? ` · tiempo observado aprox. ${Math.round(n*S.interval/60)} min` : ''}</p>
+    ${stackBar(c)}
+    <div class="legend">${CATS.map((k,i) => `<div>${catBadge(i+1,false)}<div><b>${k.t}</b> — ${c[i]} obs. (${pctFmt(c[i]/n*100)})<p>${k.d}</p></div></div>`).join('')}</div></div>`;
+  if (phaseFilter < 0 && S.phases.length > 1){
+    h += `<div class="card"><h2>Porcentaje por fases de trabajo</h2><div class="tbl-wrap"><table><tr><th>Fase</th><th class="n">Obs.</th><th class="n">% del total</th>${[1,2,3,4].map(k => `<th class="n">Cat. ${k}</th>`).join('')}<th style="min-width:140px"></th></tr>` +
+      S.phases.map((p,i) => { const l = S.obs.filter(o => o.p === i), m = l.length, cc = catCounts(l);
+        return `<tr><td>${esc(phaseName(i))}</td><td class="n">${m}</td><td class="n">${pctFmt(m/S.obs.length*100)}</td>${cc.map(x => `<td class="n">${m ? pctFmt(x/m*100) : '–'}</td>`).join('')}<td>${stackBar(cc, true)}</td></tr>`; }).join('') +
+      `</table></div></div>`;
+  }
+  const freq = new Map(); list.forEach(o => { const k = codeStr(o); freq.set(k, (freq.get(k)||0) + 1); });
+  const byCat = [[],[],[],[]];
+  [...freq.entries()].sort((a,b) => b[1]-a[1]).forEach(([k,f]) => byCat[catOf({b:+k[0], a:+k[1], l:+k[2], w:+k[3]})-1].push([k,f]));
+  h += `<div class="card"><h2>Posturas por categoría</h2><div class="cats4">` + byCat.map((rows,i) =>
+    `<div class="col"><h3>${catBadge(i+1)}</h3><div class="scroll"><table><tr><th>Postura</th><th class="n">Frec.</th><th class="n">%</th></tr>` +
+    (rows.length ? rows.map(([k,f]) => `<tr><td title="${esc(describe(k))}">${k}</td><td class="n">${f}</td><td class="n">${pctFmt(f/n*100)}</td></tr>`).join('') : `<tr><td colspan="3" class="muted small">Ninguna</td></tr>`) +
+    `</table></div></div>`).join('') + `</div><p class="small muted">Pase el puntero sobre un código para ver su descripción.</p></div>`;
+  return h;
+}
+function describe(k){ return PARTS.map((p,i) => `${p.name}: ${p.opts[k[i]-1]}`).join(' · '); }
+function renderResults(){ fillPhaseFilters(); $('#results').innerHTML = resultsHTML(); }
+
+function bodyHTML(){
+  const list = filtered(), n = list.length;
+  if (!n) return `<div class="card empty">No hay observaciones${phaseFilter >= 0 ? ' en esta fase' : ''}.</div>`;
+  let h = '';
+  PARTS.forEach(p => {
+    h += `<div class="card"><h2>${p.name}</h2>`;
+    if (BODY[p.key]) h += `<div class="scale"><span class="lab"></span><span class="ticks"><span>0 %</span><span>50 %</span><span>100 %</span></span><span class="ph"></span></div>`;
+    p.opts.forEach((name,i) => {
+      const f = list.filter(o => o[p.key] === i+1).length, pc = f/n*100;
+      if (BODY[p.key]){
+        const k = bodyCat(p.key, i, pc), t = BODY[p.key][i];
+        h += `<div class="bp-row"><div class="bp-name"><b>${i+1}</b>${name}</div>
+          <div class="track" title="${f} obs. (${pctFmt(pc)}) — categoría ${k}">${t.map((w,j) => w ? `<div class="band k${j+1}" style="flex:${w} 1 0"></div>` : '').join('')}<div class="val" style="width:${pc}%"></div></div>
+          <div class="bp-out"><span>${pctFmt(pc)}</span>${f ? catBadge(k,false) : '<span class="muted small">—</span>'}</div></div>`;
+      } else {
+        h += `<div class="bp-row"><div class="bp-name"><b>${i+1}</b>${name}</div><div class="track"><div class="band" style="flex:1;background:var(--line-soft)"></div><div class="val" style="width:${pc}%"></div></div><div class="bp-out">${f} obs. · ${pctFmt(pc)}</div></div>`;
+      }
+    });
+    h += `</div>`;
+  });
+  h += `<div class="card"><h3>Cómo leer esta gráfica</h3><p class="small muted" style="margin:0">La barra oscura indica el porcentaje del tiempo observado en cada postura. Las franjas de fondo muestran qué categoría de acción corresponde según la proporción del tiempo (verde 1, amarillo 2, naranja 3, rojo 4). La carga no tiene clasificación por tiempo.</p></div>`;
+  return h;
+}
+function renderBodyParts(){ fillPhaseFilters(); $('#bodyparts').innerHTML = bodyHTML(); }
+
+// ---- Lista de observaciones ----
+function renderList(){
+  if (!S.obs.length){ $('#obsTable').innerHTML = '<div class="empty">No hay observaciones.</div>'; return; }
+  $('#obsTable').innerHTML = `<table><tr><th class="n">#</th><th>Código</th>${PARTS.map(p => `<th>${p.name}</th>`).join('')}<th>Fase</th><th>Categoría</th><th></th></tr>` +
+    S.obs.map((o,i) => [o,i]).reverse().map(([o,i]) => `<tr><td class="n">${i+1}</td><td><b>${codeStr(o)}</b></td>${PARTS.map(p => `<td class="small">${p.opts[o[p.key]-1]}</td>`).join('')}<td class="small">${esc(phaseName(o.p))}</td><td>${catBadge(catOf(o),false)}</td><td><button class="btn danger" data-del="${i}" title="Eliminar">✕</button></td></tr>`).join('') + '</table>';
+}
+$('#obsTable').addEventListener('click', e => {
+  const b = e.target.closest('[data-del]'); if (!b) return;
+  S.obs.splice(+b.dataset.del, 1); changed(); renderList();
+});
+$('#clearAll').onclick = () => { if (S.obs.length && confirm(`¿Eliminar las ${S.obs.length} observaciones?`)){ S.obs = []; changed(); renderList(); } };
+
+// ---- Imprimir y copiar ----
+function doPrint(){
+  const title = `<h1>WinOWAS — ${esc(fileName || 'Estudio OWAS')}</h1><p class="muted" style="margin-top:0">${esc(S.bg[2]||'')}</p>`;
+  $('#print').innerHTML = title + ($('#printBg').checked ? bgBlock() : '') + resultsHTML() + bodyHTML();
+  window.print();
+}
+function copyResults(){
+  const list = filtered(), n = list.length, c = catCounts(list);
+  const lines = ['WinOWAS — ' + (fileName || 'Estudio OWAS'), ...BG_LABELS.map((l,i) => `${l}: ${S.bg[i]||''}`), `Intervalo: ${S.interval} s`,
+    `Material: ${phaseFilter < 0 ? 'Todo el material' : phaseName(phaseFilter)}`, `Observaciones: ${n}`, '',
+    'Categoría\tObs.\t%', ...c.map((x,i) => `${i+1} ${CATS[i].t}\t${x}\t${n ? (x/n*100).toFixed(1) : 0}`), '',
+    'Parte\tPostura\tObs.\t%\tCategoría'];
+  PARTS.forEach(p => p.opts.forEach((o,i) => { const f = list.filter(x => x[p.key] === i+1).length, pc = n ? f/n*100 : 0;
+    lines.push(`${p.name}\t${i+1} ${o}\t${f}\t${pc.toFixed(1)}\t${BODY[p.key] && f ? bodyCat(p.key,i,pc) : ''}`); }));
+  const txt = lines.join('\n');
+  (navigator.clipboard ? navigator.clipboard.writeText(txt) : Promise.reject()).then(() => alert('Resultados copiados al portapapeles.'), () => {
+    const ta = document.createElement('textarea'); ta.value = txt; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); ta.remove(); alert('Resultados copiados al portapapeles.');
+  });
+}
+$('#copyBtn').onclick = copyResults;
+
+// ---- Ayuda ----
+$('#helpBox').innerHTML = `<h2>Ayuda</h2>
+<p>OWAS (<i>Ovako Working posture Analysing System</i>) clasifica las posturas de trabajo mediante un código de cuatro dígitos: espalda, brazos, piernas y carga. Cada combinación tiene una categoría de acción del 1 al 4.</p>
+<h3>Pasos</h3>
+<ol><li>En <b>Datos generales</b>, rellene la información del estudio, el intervalo de observación y las fases de trabajo.</li>
+<li>En <b>Observar</b>, inicie el reloj. En cada pitido, seleccione la postura observada (o escriba sus dígitos) y pulse <b>Aceptar</b>.</li>
+<li>Consulte <b>Categorías de acción</b> y <b>Por parte del cuerpo</b>. Puede filtrar por fase de trabajo.</li>
+<li>Use <b>Guardar</b> para crear un archivo .OWS compatible con el WinOWAS original, e <b>Imprimir</b> para imprimir o guardar en PDF.</li></ol>
+<h3>Categorías de acción</h3>
+<div class="legend" style="margin-bottom:14px">${CATS.map((k,i) => `<div>${catBadge(i+1,false)}<div><b>${k.t}</b><p>${k.d}</p></div></div>`).join('')}</div>
+<h3>Códigos</h3>
+<div class="grid2">${PARTS.map(p => `<div><b>${p.name}</b><ol style="margin:4px 0 0">${p.opts.map(o => `<li>${o}</li>`).join('')}</ol></div>`).join('')}</div>
+<h3 style="margin-top:14px">Archivos</h3>
+<p class="small">Esta aplicación abre y guarda archivos <b>.OWS</b> del WinOWAS original. «Unir archivo» añade las observaciones de otro archivo al estudio actual. El trabajo se guarda además automáticamente en este navegador, pero conviene guardar el archivo .OWS. No se admiten los archivos del OWAS para DOS.</p>
+<p class="small muted">Tablas de clasificación tomadas del WinOWAS original (Universidad Tecnológica de Tampere, 1996).</p>`;
+
+// ---- Inicio ----
+document.querySelector('.top .actions').addEventListener('click', e => {
+  const a = e.target.closest('[data-act]'); if (!a) return;
+  ({new:newFile, open:openFile, join:joinFile, save:() => saveFile(false), saveas:() => saveFile(true), print:doPrint})[a.dataset.act]();
+});
+$('#tabs').addEventListener('click', e => { const b = e.target.closest('[data-tab]'); if (b) showTab(b.dataset.tab); });
+$('#restoredClose').onclick = () => $('#restored').hidden = true;
+window.addEventListener('beforeunload', e => { if (dirty){ e.preventDefault(); e.returnValue = ''; } });
+function renderAll(){ renderHeader(); renderData(); fillPhaseFilters(); renderObserve(); renderResults(); renderBodyParts(); renderList(); }
+try{
+  const saved = JSON.parse(localStorage.getItem('winowas.autosave') || 'null');
+  if (saved && saved.S && Array.isArray(saved.S.obs)){
+    S = saved.S; fileName = saved.fileName || ''; dirty = !!saved.dirty;
+    if (dirty) $('#restored').hidden = false;
+  }
+}catch(e){}
+renderAll();
+</script>
+</body>
+</html>
