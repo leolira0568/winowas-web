@@ -13,10 +13,14 @@ El WinOWAS original era un programa de Windows 3.x de 16 bits (Visual Basic 3) q
 ## Funciones
 
 - **Datos generales**: empresa, departamento, trabajo estudiado, observador, fecha, hora, intervalo de observación y fases de trabajo.
-- **Observar**: reloj con aviso sonoro en cada intervalo, selección de postura con botones grandes o con el teclado (`2341` + Enter) y categoría de acción al instante. Se puede repetir la anterior y deshacer la última.
+- **Observar**, en tres modos. En todos, la postura se elige con pictogramas o con el teclado (`2341` + Enter) y la categoría de acción se ve al instante.
+  - **En vivo**: reloj con aviso sonoro en cada intervalo.
+  - **Video** *(nuevo en 2.0)*: carga un video MP4 o WebM y lo revisa fotograma a fotograma, segundo a segundo o saltando a cada instante de muestreo según el intervalo. Al aceptar, el fotograma se guarda como imagen de la observación y queda marcado con su color de categoría en la barra de tiempo.
+  - **Fotografías** *(nuevo en 2.0)*: carga varias fotos y registra una observación por foto, con su imagen.
+- **Imágenes** *(nuevo en 2.0)*: miniaturas en la lista de observaciones, galería ordenada por riesgo en los resultados, visor ampliado con salto al momento del video, e impresión de las imágenes en el informe.
 - **Categorías de acción**: distribución en las categorías 1–4 con sus recomendaciones, desglose por fase de trabajo y posturas agrupadas por categoría.
 - **Por parte del cuerpo**: porcentaje del tiempo en cada postura de espalda, brazos y piernas, comparado con los límites de cada categoría.
-- **Archivos**: abrir, guardar, guardar como y unir archivos `.OWS`.
+- **Archivos**: abrir, guardar, guardar como y unir archivos `.OWS` (solo datos, compatibles con el original) y proyectos `.owsp` (datos más imágenes).
 - **Imprimir o guardar en PDF**, y copiar los resultados al portapapeles (se pegan como tabla en Excel o Word).
 - **Autoguardado** en el navegador para no perder trabajo.
 
@@ -65,6 +69,24 @@ M                 ← número de observaciones
 23330             ← M códigos: espalda, brazos, piernas, carga e índice de fase (desde 0)
 ...
 ```
+
+## Formato de proyecto `.owsp`
+
+Los estudios con imágenes se guardan como JSON (UTF-8):
+
+```json
+{ "format": "winowas-proyecto", "version": 2,
+  "S": { "bg": [...], "phases": [...], "interval": 30,
+         "obs": [ { "b": 2, "a": 1, "l": 3, "w": 1, "p": 0,
+                    "img": "data:image/jpeg;base64,...", "t": 12.5, "src": "video.mp4" } ] } }
+```
+
+`img` es el fotograma o la foto (JPEG de 800 px como máximo), `t` el segundo del video y `src` el nombre del archivo de origen. El video no se incluye en el proyecto.
+
+## Versiones
+
+- **2.0**: análisis por video fotograma a fotograma y por fotografías, con una imagen por observación y el formato `.owsp`.
+- **[1.0](https://github.com/leolira0568/winowas-web/releases/tag/v1.0)**: observación en vivo, compatible con `.OWS`.
 
 ## Aviso
 
