@@ -304,7 +304,7 @@ td.n,th.n{text-align:right;font-variant-numeric:tabular-nums}
       <div class="detect">
         <div class="vctrl">
           <button class="btn primary" id="detectBtn" data-icon="scan">Detección automática de postura <span class="kbd">D</span></button>
-          <label class="small"><input type="checkbox" id="autoDetect"> Detectar al llegar a cada muestra o fotografía</label>
+          <label class="small"><input type="checkbox" id="autoDetect" checked> Detectar al llegar a cada muestra o fotografía</label>
           <label class="small"><input type="checkbox" id="bakeSkel" checked> Dibujar el esqueleto en la imagen guardada</label>
         </div>
         <p class="small detect-status" id="detectStatus" role="status"></p>
@@ -1128,6 +1128,8 @@ vid.addEventListener('seeking', () => { if (!detecting){ clearOverlay(); if (las
 vid.addEventListener('play', () => { clearOverlay(); setDetectStatus(''); });
 let autoPending = false;
 vid.addEventListener('seeked', () => { if (autoPending && !detecting){ autoPending = false; if ($('#autoDetect').checked) detectPose(); } });
+// Primera muestra: al terminar de cargar un video nuevo
+vid.addEventListener('loadeddata', () => { if ($('#autoDetect').checked && mode === 'video' && !detecting) detectPose(); });
 $('#photo').addEventListener('load', () => { clearOverlay(); setDetectStatus(''); if ($('#autoDetect').checked && mode === 'photo') detectPose(); });
 window.addEventListener('resize', () => { if (lastDet && lastDet.key === mediaKey()) renderOverlay(lastDet.N); });
 
@@ -1428,7 +1430,7 @@ $('#helpBox').innerHTML = `<h2>${ico('help')}Ayuda</h2>
 <div class="grid2">${PARTS.map(p => `<div><b>${p.name}</b>${p.opts.map((o,i) => `<div class="bp-name" style="margin:4px 0"><b>${i+1}</b>${pict(p.key, i+1)}${o}</div>`).join('')}</div>`).join('')}</div>
 <h3 style="margin-top:14px">Archivos</h3>
 <p class="small">Esta aplicación abre y guarda archivos <b>.OWS</b> del WinOWAS original, que contienen solo los datos. Los estudios con imágenes se guardan como proyecto <b>.owsp</b>, que incluye cada imagen. El video original no se guarda dentro del proyecto: conserve el archivo de video para volver a revisarlo. «Unir archivo» añade las observaciones de otro archivo al estudio actual. El trabajo se guarda además automáticamente en este navegador, pero conviene guardar el archivo. No se admiten los archivos del OWAS para DOS.</p>
-<p class="small muted">WinOWAS Web 3.1. Tablas de clasificación tomadas del WinOWAS original (Universidad Tecnológica de Tampere, 1996). Detección de posturas con MediaPipe Pose (© Google LLC, licencia Apache 2.0), incluido en este archivo.</p>`;
+<p class="small muted">WinOWAS Web 3.2. Tablas de clasificación tomadas del WinOWAS original (Universidad Tecnológica de Tampere, 1996). Detección de posturas con MediaPipe Pose (© Google LLC, licencia Apache 2.0), incluido en este archivo.</p>`;
 
 // ---- Inicio ----
 document.querySelector('.top .actions').addEventListener('click', e => {

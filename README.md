@@ -114,7 +114,8 @@ El script incrusta en base64 los archivos de [`vendor/mediapipe/`](vendor/mediap
 
 ## Versiones
 
-- **3.1**: tablas y figuras en formato APA 7 en pantalla y en la impresión; botón «Detección automática de postura» destacado en azul.
+- **3.2**: «Detectar al llegar a cada muestra o fotografía» activado por defecto; también detecta al cargar un video.
+- **[3.1](https://github.com/leolira0568/winowas-web/releases/tag/v3.1)**: tablas y figuras en formato APA 7 en pantalla y en la impresión; botón «Detección automática de postura» destacado en azul.
 - **[3.0](https://github.com/leolira0568/winowas-web/releases/tag/v3.0)**: detección automática de posturas con MediaPipe, incluida en el archivo para funcionar sin internet.
 - **[2.0](https://github.com/leolira0568/winowas-web/releases/tag/v2.0)**: análisis por video fotograma a fotograma y por fotografías, con una imagen por observación y el formato `.owsp`.
 - **[1.0](https://github.com/leolira0568/winowas-web/releases/tag/v1.0)**: observación en vivo, compatible con `.OWS`.
