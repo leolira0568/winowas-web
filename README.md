@@ -100,7 +100,7 @@ Los estudios con imágenes se guardan como JSON (UTF-8):
                     "det": "213" } ] } }
 ```
 
-`img` es el fotograma o la foto (JPEG de 800 px como máximo), `t` el segundo del video, `src` el nombre del archivo de origen y `det` la propuesta automática de espalda, brazos y piernas, si la hubo (`0` en piernas significa que no se pudo detectar). El video no se incluye en el proyecto.
+`img` es el fotograma o la foto (JPEG de 800 px como máximo), `t` el segundo del video, `src` el nombre del archivo de origen y `det` la propuesta automática de espalda, brazos y piernas, si la hubo (`0` en piernas significa que no se pudo detectar), y `dm` los ángulos medidos en grados: `trunk` (tronco), `twist` (giro), `side` (lateral), `armsUp` (brazos sobre el hombro), `kneeL` y `kneeR` (rodillas) y `walk` (desplazamiento en %). El video no se incluye en el proyecto.
 
 ## Desarrollo
 
@@ -114,7 +114,8 @@ El script incrusta en base64 los archivos de [`vendor/mediapipe/`](vendor/mediap
 
 ## Versiones
 
-- **3.2**: «Detectar al llegar a cada muestra o fotografía» activado por defecto; también detecta al cargar un video.
+- **3.3**: subtítulos con los datos de la detección debajo del video o la foto, grabados también en la imagen guardada; los datos aparecen en la galería, el visor y una nueva tabla APA de mediciones.
+- **[3.2](https://github.com/leolira0568/winowas-web/releases/tag/v3.2)**: «Detectar al llegar a cada muestra o fotografía» activado por defecto; también detecta al cargar un video.
 - **[3.1](https://github.com/leolira0568/winowas-web/releases/tag/v3.1)**: tablas y figuras en formato APA 7 en pantalla y en la impresión; botón «Detección automática de postura» destacado en azul.
 - **[3.0](https://github.com/leolira0568/winowas-web/releases/tag/v3.0)**: detección automática de posturas con MediaPipe, incluida en el archivo para funcionar sin internet.
 - **[2.0](https://github.com/leolira0568/winowas-web/releases/tag/v2.0)**: análisis por video fotograma a fotograma y por fotografías, con una imagen por observación y el formato `.owsp`.

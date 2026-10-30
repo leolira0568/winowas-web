@@ -73,6 +73,10 @@ dialog#viewer::backdrop{background:rgba(0,0,0,.6)}
 
 /* Detección automática de postura */
 .stage canvas.overlay{position:absolute;left:0;top:0;pointer-events:none}
+.subs{text-align:center;color:#fff;background:#141414;border-radius:8px;padding:8px 12px;margin-top:6px;font-size:16px;line-height:1.45}
+.subs b{color:#ffe08a}
+@media (max-width:640px){.subs{font-size:13px;padding:6px 8px}}
+.gallery .det-cap{display:block;width:100%;font-size:12px;color:var(--ink-2);line-height:1.35}
 .detect{border-top:1px solid var(--line-soft);margin-top:12px;padding-top:4px}
 .detect-status{margin:8px 0 4px;min-height:1.5em;display:flex;gap:6px 10px;flex-wrap:wrap;align-items:center}
 .detect-status .chip{background:var(--surface-2);border:1px solid var(--line-soft);border-radius:6px;padding:1px 7px;font-variant-numeric:tabular-nums}
@@ -273,6 +277,7 @@ td.n,th.n{text-align:right;font-variant-numeric:tabular-nums}
           <span class="muted small" id="videoName">Ningún video cargado</span>
         </div>
         <div class="stage"><video id="vid" playsinline muted preload="auto"></video><canvas class="overlay" id="ovVideo" aria-hidden="true"></canvas><p class="stage-empty" id="vidEmpty">Cargue un video (MP4 o WebM) para revisarlo fotograma a fotograma.</p></div>
+        <div class="subs" id="subsVideo" role="status" hidden></div>
         <div class="timeline"><div class="marks" id="marks"></div><input type="range" id="seek" min="0" max="0" step="0.01" value="0" aria-label="Posición del video"></div>
         <div class="vctrl">
           <button class="btn icon-only" id="vPrevS" data-icon="skipB" title="Muestra anterior (B)" aria-label="Muestra anterior"></button>
@@ -294,6 +299,7 @@ td.n,th.n{text-align:right;font-variant-numeric:tabular-nums}
           <span class="muted small" id="photoInfo">Ninguna fotografía cargada</span>
         </div>
         <div class="stage"><img id="photo" alt=""><canvas class="overlay" id="ovPhoto" aria-hidden="true"></canvas><p class="stage-empty" id="photoEmpty">Cargue una o varias fotografías (JPG, PNG o WebP). Al aceptar, cada observación guarda su fotografía.</p></div>
+        <div class="subs" id="subsPhoto" role="status" hidden></div>
         <div class="vctrl">
           <button class="btn icon-only" id="pPrev" data-icon="chevL" title="Fotografía anterior (←)" aria-label="Fotografía anterior"></button>
           <button class="btn icon-only" id="pNext" data-icon="chevR" title="Fotografía siguiente (→)" aria-label="Fotografía siguiente"></button>
@@ -305,7 +311,8 @@ td.n,th.n{text-align:right;font-variant-numeric:tabular-nums}
         <div class="vctrl">
           <button class="btn primary" id="detectBtn" data-icon="scan">Detección automática de postura <span class="kbd">D</span></button>
           <label class="small"><input type="checkbox" id="autoDetect" checked> Detectar al llegar a cada muestra o fotografía</label>
-          <label class="small"><input type="checkbox" id="bakeSkel" checked> Dibujar el esqueleto en la imagen guardada</label>
+          <label class="small"><input type="checkbox" id="showSubs" checked> Mostrar subtítulos con los datos de la detección</label>
+          <label class="small"><input type="checkbox" id="bakeSkel" checked> Grabar el esqueleto y los subtítulos en la imagen guardada</label>
         </div>
         <p class="small detect-status" id="detectStatus" role="status"></p>
         <details class="small">
@@ -815,24 +822,50 @@ function setMode(m){
 $('#modeSeg').addEventListener('click', e => { const b = e.target.closest('[data-mode]'); if (b) setMode(b.dataset.mode); });
 
 // Captura del fotograma o la fotografía actual, reducida para que el proyecto no pese demasiado
-function grabFrame(src, N){
+function grabFrame(src, det){
   const w0 = src.videoWidth || src.naturalWidth, h0 = src.videoHeight || src.naturalHeight;
   if (!w0 || !h0) return null;
   const k = Math.min(1, 800 / Math.max(w0, h0)), c = document.createElement('canvas');
-  c.width = Math.round(w0 * k); c.height = Math.round(h0 * k);
-  c.getContext('2d').drawImage(src, 0, 0, c.width, c.height);
-  if (N) drawSkeleton(c.getContext('2d'), N, c.width, c.height, c.width / 640);
+  const w = Math.round(w0 * k), h = Math.round(h0 * k);
+  const sub = det ? layoutSubtitles(detLines(det.code, det.m), w) : null;
+  c.width = w; c.height = h + (sub ? sub.height : 0);
+  const g = c.getContext('2d');
+  g.drawImage(src, 0, 0, w, h);
+  if (det){ drawSkeleton(g, det.N, w, h, w / 640); drawSubtitles(g, sub, w, h); }
   try{ return c.toDataURL('image/jpeg', 0.8); }catch(e){ return null; }
+}
+// Franja de subtítulos debajo de la imagen: reparte el texto en renglones según el ancho
+function layoutSubtitles(lines, w){
+  const fs = Math.max(11, Math.round(w / 48)), pad = Math.round(fs * 0.6), lh = Math.round(fs * 1.35);
+  const g = document.createElement('canvas').getContext('2d');
+  g.font = `${fs}px Arial, Helvetica, sans-serif`;
+  const rows = [];
+  for (const line of lines){
+    let cur = '';
+    for (const word of line.split(' ')){
+      const t = cur ? cur + ' ' + word : word;
+      if (g.measureText(t).width > w - pad * 2 && cur){ rows.push(cur); cur = word; } else cur = t;
+    }
+    rows.push(cur);
+  }
+  return {rows, fs, pad, lh, height: rows.length * lh + pad * 2};
+}
+function drawSubtitles(g, sub, w, top){
+  g.save();
+  g.fillStyle = '#141414'; g.fillRect(0, top, w, sub.height);
+  g.font = `${sub.fs}px Arial, Helvetica, sans-serif`; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillStyle = '#fff';
+  sub.rows.forEach((r, i) => g.fillText(r, w / 2, top + sub.pad + sub.lh * (i + 0.5)));
+  g.restore();
 }
 function captureMedia(){
   const det = lastDet && lastDet.key === mediaKey() ? lastDet : null;
-  const extra = det ? {det: det.code} : {}, N = det && $('#bakeSkel').checked ? det.N : null;
+  const extra = det ? {det: det.code, dm: det.m} : {}, bake = det && $('#bakeSkel').checked ? det : null;
   if (mode === 'video' && vid.src && vid.readyState >= 2){
-    const img = grabFrame(vid, N);
+    const img = grabFrame(vid, bake);
     return img ? {img, t: Math.round(vid.currentTime * 1000) / 1000, src: videoName, ...extra} : {};
   }
   if (mode === 'photo' && photos[pi]){
-    const img = grabFrame($('#photo'), N);
+    const img = grabFrame($('#photo'), bake);
     return img ? {img, src: photos[pi].name, ...extra} : {};
   }
   return {};
@@ -926,7 +959,7 @@ function openViewer(i){
   viewIdx = i;
   $('#viewImg').src = o.img; $('#viewImg').alt = `Observación ${i+1}`;
   $('#viewInfo').innerHTML = `<p style="margin:0 0 6px;display:flex;gap:8px;align-items:center;flex-wrap:wrap"><b>Observación ${i+1} · ${codeStr(o)}</b>${catBadge(catOf(o))}</p>
-    <p class="small muted" style="margin:0">${esc(describe(codeStr(o)))}<br>${esc(phaseName(o.p))}${o.src ? ' · ' + esc(o.src) : ''}${o.t != null ? ' · ' + fmtTime(o.t) : ''}</p>${o.det ? `<p class="small" style="margin:6px 0 0">Propuesta automática: <b>${o.det.split('').join(' ')}</b>${detTag(o)}</p>` : ''}`;
+    <p class="small muted" style="margin:0">${esc(describe(codeStr(o)))}<br>${esc(phaseName(o.p))}${o.src ? ' · ' + esc(o.src) : ''}${o.t != null ? ' · ' + fmtTime(o.t) : ''}</p>${o.det ? `<p class="small" style="margin:6px 0 0">Propuesta automática: <b>${o.det.split('').join(' ')}</b>${detTag(o)}</p>` : ''}${o.det && o.dm ? `<p class="small muted" style="margin:2px 0 0">${detLines(o.det, o.dm).map(esc).join('<br>')}</p>` : ''}`;
   $('#viewJump').hidden = !(o.t != null && o.src === videoName && vid.src);
   $('#viewer').showModal();
 }
@@ -1056,15 +1089,31 @@ function drawSkeleton(g, N, w, h, scale = 1){
 }
 function mediaEl(){ return mode === 'video' ? vid : $('#photo'); }
 function overlayEl(){ return mode === 'video' ? $('#ovVideo') : $('#ovPhoto'); }
-function clearOverlay(){ for (const c of [$('#ovVideo'), $('#ovPhoto')]) c.getContext('2d').clearRect(0, 0, c.width, c.height); }
-function renderOverlay(N){
+function clearOverlay(){
+  for (const c of [$('#ovVideo'), $('#ovPhoto')]) c.getContext('2d').clearRect(0, 0, c.width, c.height);
+  $('#subsVideo').hidden = $('#subsPhoto').hidden = true;
+}
+// Texto de los subtítulos: postura propuesta de cada parte y los ángulos medidos
+function detLines(code, m){
+  const opt = (k, v) => PARTS.find(p => p.key === k).opts[v - 1];
+  const [b, a, l] = code.split('').map(Number);
+  return [
+    `Espalda ${b}: ${opt('b', b)} (tronco ${m.trunk}°, giro ${m.twist}°, lateral ${m.side}°)`,
+    `Brazos ${a}: ${opt('a', a)} · Piernas ` + (l ? `${l}: ${opt('l', l)}` : 'no visibles') +
+      (m.kneeL != null ? ` (rodillas ${m.kneeL}° / ${m.kneeR}°${m.walk != null ? `, desplazamiento ${m.walk} %` : ''})` : '')
+  ];
+}
+function renderOverlay(det){
   const el = mediaEl(), c = overlayEl(), stage = el.parentElement;
   const r = el.getBoundingClientRect(), sr = stage.getBoundingClientRect(), dpr = window.devicePixelRatio || 1;
   c.style.left = (r.left - sr.left) + 'px'; c.style.top = (r.top - sr.top) + 'px';
   c.style.width = r.width + 'px'; c.style.height = r.height + 'px';
   c.width = Math.round(r.width * dpr); c.height = Math.round(r.height * dpr);
   const g = c.getContext('2d'); g.clearRect(0, 0, c.width, c.height);
-  drawSkeleton(g, N, c.width, c.height, dpr);
+  drawSkeleton(g, det.N, c.width, c.height, dpr);
+  const subs = mode === 'video' ? $('#subsVideo') : $('#subsPhoto');
+  subs.hidden = !$('#showSubs').checked;
+  subs.innerHTML = detLines(det.code, det.m).map(t => `<div>${esc(t).replace(/^(\w+ \d|Brazos \d)/, '<b>$1</b>').replace(/· Piernas (\d)/, '· <b>Piernas $1</b>')}</div>`).join('');
 }
 // Clave del fotograma o la foto actual, para saber si la detección sigue vigente
 const mediaKey = () => mode === 'video' ? `${videoName}@${vid.currentTime.toFixed(3)}` : (photos[pi] ? photos[pi].name : '');
@@ -1105,10 +1154,14 @@ async function detectPose(){
         }
       }
     }
-    lastDet = {key, N, code: `${r.b}${r.a}${r.l || 0}`};
+    const rd = v => Math.round(v);
+    const dm = {trunk: rd(r.m.trunk), twist: rd(r.m.twist), side: rd(r.m.side), armsUp: r.m.armsUp};
+    if (r.m.kneeL != null){ dm.kneeL = rd(r.m.kneeL); dm.kneeR = rd(r.m.kneeR); }
+    if (r.m.walk != null) dm.walk = rd(r.m.walk);
+    lastDet = {key, N, code: `${r.b}${r.a}${r.l || 0}`, m: dm};
     sel.b = r.b; sel.a = r.a; if (r.l) sel.l = r.l;
     renderObserve();
-    renderOverlay(N);
+    renderOverlay(lastDet);
     const f = v => Math.round(v);
     const chips = [`Tronco ${f(r.m.trunk)}°`, `Giro ${f(r.m.twist)}°`, `Lateral ${f(r.m.side)}°`, `Brazos arriba ${r.m.armsUp}`];
     if (r.m.kneeL != null) chips.push(`Rodillas ${f(r.m.kneeL)}° / ${f(r.m.kneeR)}°`);
@@ -1131,7 +1184,8 @@ vid.addEventListener('seeked', () => { if (autoPending && !detecting){ autoPendi
 // Primera muestra: al terminar de cargar un video nuevo
 vid.addEventListener('loadeddata', () => { if ($('#autoDetect').checked && mode === 'video' && !detecting) detectPose(); });
 $('#photo').addEventListener('load', () => { clearOverlay(); setDetectStatus(''); if ($('#autoDetect').checked && mode === 'photo') detectPose(); });
-window.addEventListener('resize', () => { if (lastDet && lastDet.key === mediaKey()) renderOverlay(lastDet.N); });
+window.addEventListener('resize', () => { if (lastDet && lastDet.key === mediaKey()) renderOverlay(lastDet); });
+$('#showSubs').addEventListener('change', () => { if (lastDet && lastDet.key === mediaKey()) renderOverlay(lastDet); });
 
 // ---- Resultados ----
 function fillPhaseFilters(){
@@ -1200,9 +1254,9 @@ function agreementHTML(list){
 function galleryHTML(list){
   const items = list.map(o => [o, S.obs.indexOf(o)]).filter(([o]) => o.img).sort((x, y) => catOf(y[0]) - catOf(x[0]) || x[1] - y[1]);
   if (!items.length) return '';
-  return `<div class="card"><h2>${ico('image')}Imágenes de las observaciones</h2><p class="small muted" style="margin-top:-6px">${items.length} imágenes, ordenadas de mayor a menor riesgo.</p><div class="gallery">` +
+  return `<div class="card"><h2>${ico('image')}Imágenes de las observaciones</h2><p class="small muted" style="margin-top:-6px">${items.length === 1 ? "1 imagen." : items.length + " imágenes, ordenadas de mayor a menor riesgo."}</p><div class="gallery">` +
     items.map(([o, i]) => `<figure><button data-view="${i}" aria-label="Ampliar la imagen de la observación ${i+1}"><img src="${o.img}" alt="" loading="lazy"></button>
-      <figcaption>${catBadge(catOf(o), false)}<b>${codeStr(o)}</b><span class="muted">Obs. ${i+1} · ${esc(phaseName(o.p))}${o.t != null ? ' · ' + fmtTime(o.t) : ''}</span></figcaption></figure>`).join('') + '</div></div>';
+      <figcaption>${catBadge(catOf(o), false)}<b>${codeStr(o)}</b><span class="muted">Obs. ${i+1} · ${esc(phaseName(o.p))}${o.t != null ? ' · ' + fmtTime(o.t) : ''}</span>${o.det && o.dm ? `<span class="det-cap">Detección automática: ${esc(detLines(o.det, o.dm).join(' · '))}${detTag(o)}</span>` : ''}</figcaption></figure>`).join('') + '</div></div>';
 }
 function describe(k){ return PARTS.map((p,i) => `${p.name}: ${p.opts[k[i]-1]}`).join(' · '); }
 function renderResults(){ fillPhaseFilters(); $('#results').innerHTML = resultsHTML() + apaCard('cat'); }
@@ -1364,6 +1418,14 @@ function apaSections(){
       [row('Espalda', o => +o.det[0] === o.b), row('Brazos', o => +o.det[1] === o.a), row('Piernas', o => +o.det[2] === o.l), row('Código completo sin carga', o => o.det === `${o.b}${o.a}${o.l}`)],
       `<i>N</i> = ${d.length} observaciones con propuesta automática de MediaPipe Pose. Una coincidencia indica que la propuesta se aceptó sin corregirla.`);
   }
+  const dmList = list.map(o => [o, S.obs.indexOf(o)]).filter(([o]) => o.det && o.dm);
+  if (dmList.length){
+    const v = x => x == null ? '—' : x;
+    body += apaTable(++t, 'Mediciones de la detección automática en cada observación',
+      [{t: 'Obs.', n: 1}, {t: 'Código registrado'}, {t: 'Propuesta'}, {t: 'Tronco (°)', n: 1}, {t: 'Giro (°)', n: 1}, {t: 'Lateral (°)', n: 1}, {t: 'Brazos sobre el hombro', n: 1}, {t: 'Rodilla izq. (°)', n: 1}, {t: 'Rodilla der. (°)', n: 1}],
+      dmList.map(([o, i]) => ({c: [i + 1, codeStr(o), o.det, o.dm.trunk, o.dm.twist, o.dm.side, o.dm.armsUp, v(o.dm.kneeL), v(o.dm.kneeR)]})),
+      `Ángulos estimados con MediaPipe Pose a partir de los puntos del cuerpo en 3D. Tronco: inclinación respecto de la vertical. Giro: diferencia entre la línea de los hombros y la de las caderas. Lateral: inclinación hacia un costado. Rodilla: ángulo entre muslo y pierna (180° = extendida). El código registrado incluye la carga, que no se detecta. — = no visible.`);
+  }
   return {cat, body};
 }
 const apaRefs = () => `<div class="apa-refs"><h3>Referencias</h3><p>${APA_REF}</p></div>`;
@@ -1430,7 +1492,7 @@ $('#helpBox').innerHTML = `<h2>${ico('help')}Ayuda</h2>
 <div class="grid2">${PARTS.map(p => `<div><b>${p.name}</b>${p.opts.map((o,i) => `<div class="bp-name" style="margin:4px 0"><b>${i+1}</b>${pict(p.key, i+1)}${o}</div>`).join('')}</div>`).join('')}</div>
 <h3 style="margin-top:14px">Archivos</h3>
 <p class="small">Esta aplicación abre y guarda archivos <b>.OWS</b> del WinOWAS original, que contienen solo los datos. Los estudios con imágenes se guardan como proyecto <b>.owsp</b>, que incluye cada imagen. El video original no se guarda dentro del proyecto: conserve el archivo de video para volver a revisarlo. «Unir archivo» añade las observaciones de otro archivo al estudio actual. El trabajo se guarda además automáticamente en este navegador, pero conviene guardar el archivo. No se admiten los archivos del OWAS para DOS.</p>
-<p class="small muted">WinOWAS Web 3.2. Tablas de clasificación tomadas del WinOWAS original (Universidad Tecnológica de Tampere, 1996). Detección de posturas con MediaPipe Pose (© Google LLC, licencia Apache 2.0), incluido en este archivo.</p>`;
+<p class="small muted">WinOWAS Web 3.3. Tablas de clasificación tomadas del WinOWAS original (Universidad Tecnológica de Tampere, 1996). Detección de posturas con MediaPipe Pose (© Google LLC, licencia Apache 2.0), incluido en este archivo.</p>`;
 
 // ---- Inicio ----
 document.querySelector('.top .actions').addEventListener('click', e => {
