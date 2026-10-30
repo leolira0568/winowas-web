@@ -190,11 +190,31 @@ td.n,th.n{text-align:right;font-variant-numeric:tabular-nums}
   .scale .lab,.scale .ph{display:none}
   .bp-out{justify-content:flex-start}
 }
+/* Tablas y figuras en formato APA (7.ª edición): número en negrita, título en cursiva,
+   solo líneas horizontales en las tablas y «Nota.» debajo */
+.apa{font-family:"Times New Roman",Times,serif;font-size:16px;line-height:1.5;color:#000;margin:0 0 32px}
+.apa-num{font-weight:700;margin:0}
+.apa-title{font-style:italic;margin:0 0 10px}
+.apa table{width:auto;min-width:min(100%,520px);border-collapse:collapse}
+.apa th,.apa td{border:0;padding:3px 14px;color:#000;font-size:inherit;font-variant-numeric:tabular-nums;vertical-align:top}
+.apa th{font-weight:400;text-align:center;border-top:1.5px solid #000;border-bottom:1px solid #000}
+.apa th:first-child{text-align:left}
+.apa tbody tr:last-child td{border-bottom:1.5px solid #000}
+.apa td.n{text-align:right}
+.apa tr.total td{border-top:1px solid #000}
+.apa-note{margin:6px 0 0}
+.apa svg{display:block;width:100%;max-width:680px;height:auto;background:#fff}
+.apa-refs{font-family:"Times New Roman",Times,serif;font-size:16px;line-height:1.5;color:#000}
+.apa-refs h3{text-align:center;font-weight:700;font-size:inherit;margin:0 0 8px}
+.apa-refs p{padding-left:36px;text-indent:-36px;margin:0 0 6px}
+
 @media print{
   body{background:#fff}
   .top,.tabs,main,.notice{display:none !important}
   #print{display:block;padding:0}
   .card{border:0;padding:0;margin-bottom:18px;break-inside:avoid}
+  .apa{break-inside:avoid}
+  .apa svg *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
   .stack div,.track .band,.track .val,.cat i{-webkit-print-color-adjust:exact;print-color-adjust:exact}
   .cats4 .col .scroll{max-height:none}
   h1{font-size:20px;margin:0 0 4px}
@@ -283,7 +303,7 @@ td.n,th.n{text-align:right;font-variant-numeric:tabular-nums}
       </div>
       <div class="detect">
         <div class="vctrl">
-          <button class="btn" id="detectBtn" data-icon="scan">Detectar postura <span class="kbd">D</span></button>
+          <button class="btn primary" id="detectBtn" data-icon="scan">Detección automática de postura <span class="kbd">D</span></button>
           <label class="small"><input type="checkbox" id="autoDetect"> Detectar al llegar a cada muestra o fotografía</label>
           <label class="small"><input type="checkbox" id="bakeSkel" checked> Dibujar el esqueleto en la imagen guardada</label>
         </div>
@@ -331,6 +351,7 @@ td.n,th.n{text-align:right;font-variant-numeric:tabular-nums}
     <div class="filter"><label>Material: <select class="phaseFilter"></select></label>
       <label><input type="checkbox" id="printBg" checked> Incluir información general al imprimir</label>
       <label><input type="checkbox" id="printImg" checked> Incluir imágenes al imprimir</label>
+      <label><input type="checkbox" id="printApa" checked> Incluir tablas y figuras APA al imprimir</label>
       <button class="btn" id="copyBtn" data-icon="copy">Copiar resultados</button></div>
     <div id="results"></div>
   </section>
@@ -1182,7 +1203,7 @@ function galleryHTML(list){
       <figcaption>${catBadge(catOf(o), false)}<b>${codeStr(o)}</b><span class="muted">Obs. ${i+1} · ${esc(phaseName(o.p))}${o.t != null ? ' · ' + fmtTime(o.t) : ''}</span></figcaption></figure>`).join('') + '</div></div>';
 }
 function describe(k){ return PARTS.map((p,i) => `${p.name}: ${p.opts[k[i]-1]}`).join(' · '); }
-function renderResults(){ fillPhaseFilters(); $('#results').innerHTML = resultsHTML(); }
+function renderResults(){ fillPhaseFilters(); $('#results').innerHTML = resultsHTML() + apaCard('cat'); }
 
 function bodyHTML(){
   const list = filtered(), n = list.length;
@@ -1207,7 +1228,150 @@ function bodyHTML(){
   h += `<div class="card"><h3>Cómo leer esta gráfica</h3><p class="small muted" style="margin:0">La barra oscura indica el porcentaje del tiempo observado en cada postura. Las franjas de fondo muestran qué categoría de acción corresponde según la proporción del tiempo (verde 1, amarillo 2, naranja 3, rojo 4). La carga no tiene clasificación por tiempo.</p></div>`;
   return h;
 }
-function renderBodyParts(){ fillPhaseFilters(); $('#bodyparts').innerHTML = bodyHTML(); }
+function renderBodyParts(){ fillPhaseFilters(); $('#bodyparts').innerHTML = bodyHTML() + apaCard('body'); }
+
+// ---- Tablas y figuras en formato APA (7.ª edición) ----
+// La numeración es correlativa en todo el informe: primero las de categorías y luego las de partes del cuerpo
+const CAT_HEX = ['#0ca30c', '#fab219', '#ec835a', '#d03b3b'];
+const fmtP = v => (Math.round(v * 10) / 10).toLocaleString('es', {minimumFractionDigits: 1, maximumFractionDigits: 1});
+const APA_REF = 'Karhu, O., Kansi, P. y Kuorinka, I. (1977). Correcting working postures in industry: A practical method for analysis. <i>Applied Ergonomics, 8</i>(4), 199–201. https://doi.org/10.1016/0003-6870(77)90164-8';
+function apaTable(num, title, head, rows, note){
+  return `<figure class="apa"><p class="apa-num">Tabla ${num}</p><p class="apa-title">${title}</p><div class="tbl-wrap"><table>
+    <thead><tr>${head.map(h => `<th>${h.t}</th>`).join('')}</tr></thead>
+    <tbody>${rows.map(r => `<tr${r.total ? ' class="total"' : ''}>${r.c.map((c, i) => `<td${head[i].n ? ' class="n"' : ''}>${c}</td>`).join('')}</tr>`).join('')}</tbody>
+    </table></div>${note ? `<p class="apa-note"><i>Nota.</i> ${note}</p>` : ''}</figure>`;
+}
+function apaFigure(num, title, svg, note){
+  return `<figure class="apa"><p class="apa-num">Figura ${num}</p><p class="apa-title">${title}</p>${svg}${note ? `<p class="apa-note"><i>Nota.</i> ${note}</p>` : ''}</figure>`;
+}
+const svgOpen = (w, h, label) => `<svg viewBox="0 0 ${w} ${h}" role="img" aria-label="${esc(label)}" font-family="Arial, Helvetica, sans-serif" font-size="13" fill="#000">`;
+
+// Figura: barras verticales con el porcentaje de observaciones de cada categoría
+function figCategories(c, n){
+  const W = 640, H = 360, L = 64, R = 16, T = 24, B = 74, pw = W - L - R, ph = H - T - B, band = pw / 4, bw = 72;
+  const y = v => T + ph - v / 100 * ph;
+  let s = svgOpen(W, H, 'Gráfico de barras del porcentaje de observaciones por categoría de acción');
+  for (let v = 0; v <= 100; v += 20) s += `<line x1="${L}" x2="${L + pw}" y1="${y(v)}" y2="${y(v)}" stroke="${v ? '#e2e2e2' : '#000'}"/><text x="${L - 8}" y="${y(v) + 4}" text-anchor="end">${v}</text>`;
+  s += `<line x1="${L}" x2="${L}" y1="${T}" y2="${T + ph}" stroke="#000"/>`;
+  c.forEach((k, i) => {
+    const pc = n ? k / n * 100 : 0, x = L + band * i + (band - bw) / 2;
+    s += `<rect x="${x}" y="${y(pc)}" width="${bw}" height="${T + ph - y(pc)}" fill="${CAT_HEX[i]}" stroke="#000" stroke-width="0.6"/>`;
+    s += `<text x="${x + bw / 2}" y="${y(pc) - 6}" text-anchor="middle">${fmtP(pc)} %</text>`;
+    s += `<text x="${x + bw / 2}" y="${T + ph + 18}" text-anchor="middle">Categoría ${i + 1}</text><text x="${x + bw / 2}" y="${T + ph + 34}" text-anchor="middle" fill="#444">(${CATS[i].t.toLowerCase()})</text>`;
+  });
+  s += `<text x="${L + pw / 2}" y="${H - 8}" text-anchor="middle">Categoría de acción</text>`;
+  s += `<text transform="translate(16 ${T + ph / 2}) rotate(-90)" text-anchor="middle">Porcentaje de observaciones</text></svg>`;
+  return s;
+}
+// Figura: barras apiladas al 100 % con la distribución de categorías en cada fase
+function figPhases(){
+  const rows = S.phases.map((p, i) => { const l = S.obs.filter(o => o.p === i); return {name: phaseName(i), n: l.length, c: catCounts(l)}; });
+  const W = 640, L = 150, R = 16, T = 40, rh = 34, pw = W - L - R, H = T + rows.length * rh + 46;
+  let s = svgOpen(W, H, 'Gráfico de barras apiladas de las categorías de acción por fase de trabajo');
+  CATS.forEach((k, i) => { const x = L + i * (pw / 4); s += `<rect x="${x}" y="8" width="14" height="14" fill="${CAT_HEX[i]}" stroke="#000" stroke-width="0.6"/><text x="${x + 20}" y="20">Categoría ${i + 1}</text>`; });
+  rows.forEach((r, j) => {
+    const yy = T + j * rh; let x = L;
+    s += `<text x="${L - 8}" y="${yy + 19}" text-anchor="end">${esc(r.name.length > 20 ? r.name.slice(0, 19) + '…' : r.name)}</text>`;
+    r.c.forEach((k, i) => {
+      if (!r.n || !k) return;
+      const w = k / r.n * pw;
+      s += `<rect x="${x}" y="${yy + 4}" width="${w}" height="${rh - 10}" fill="${CAT_HEX[i]}" stroke="#000" stroke-width="0.6"/>`;
+      if (k / r.n >= 0.1) s += `<text x="${x + w / 2}" y="${yy + 19}" text-anchor="middle" fill="${i === 0 || i === 3 ? '#fff' : '#000'}">${fmtP(k / r.n * 100)}</text>`;
+      x += w;
+    });
+  });
+  const yb = T + rows.length * rh;
+  for (let v = 0; v <= 100; v += 25){ const x = L + v / 100 * pw; s += `<line x1="${x}" x2="${x}" y1="${yb}" y2="${yb + 5}" stroke="#000"/><text x="${x}" y="${yb + 19}" text-anchor="middle">${v}</text>`; }
+  s += `<line x1="${L}" x2="${L + pw}" y1="${yb}" y2="${yb}" stroke="#000"/><text x="${L + pw / 2}" y="${H - 6}" text-anchor="middle">Porcentaje de observaciones de la fase</text></svg>`;
+  return s;
+}
+// Figura: porcentaje del tiempo en cada postura, agrupado por parte del cuerpo
+function figBody(list){
+  const n = list.length, W = 680, L = 250, R = 110, rh = 22, pw = W - L - R;
+  const rows = [];
+  PARTS.forEach(p => { rows.push({head: p.name}); p.opts.forEach((name, i) => {
+    const f = list.filter(o => o[p.key] === i + 1).length, pc = n ? f / n * 100 : 0;
+    rows.push({label: `${i + 1}. ${name}`, pc, k: BODY[p.key] && f ? bodyCat(p.key, i, pc) : 0});
+  }); });
+  const T = 10, H = T + rows.length * rh + 46;
+  let s = svgOpen(W, H, 'Gráfico de barras horizontales del porcentaje del tiempo en cada postura por parte del cuerpo');
+  rows.forEach((r, j) => {
+    const yy = T + j * rh;
+    if (r.head){ s += `<text x="4" y="${yy + 16}" font-weight="700">${r.head}</text>`; return; }
+    const w = r.pc / 100 * pw;
+    s += `<text x="${L - 8}" y="${yy + 15}" text-anchor="end">${esc(r.label)}</text>`;
+    if (w > 0) s += `<rect x="${L}" y="${yy + 4}" width="${w}" height="${rh - 8}" fill="${r.k ? CAT_HEX[r.k - 1] : '#9a9a9a'}" stroke="#000" stroke-width="0.6"/>`;
+    s += `<text x="${L + w + 6}" y="${yy + 15}">${fmtP(r.pc)} %${r.k ? ` (cat. ${r.k})` : ''}</text>`;
+  });
+  const yb = T + rows.length * rh;
+  for (let v = 0; v <= 100; v += 25){ const x = L + v / 100 * pw; s += `<line x1="${x}" x2="${x}" y1="${yb}" y2="${yb + 5}" stroke="#000"/><text x="${x}" y="${yb + 19}" text-anchor="middle">${v}</text>`; }
+  s += `<line x1="${L}" x2="${L}" y1="${T}" y2="${yb}" stroke="#000"/><line x1="${L}" x2="${L + pw}" y1="${yb}" y2="${yb}" stroke="#000"/>`;
+  s += `<text x="${L + pw / 2}" y="${H - 6}" text-anchor="middle">Porcentaje de observaciones</text></svg>`;
+  return s;
+}
+
+function apaSections(){
+  const list = filtered(), n = list.length;
+  if (!n) return {cat: '', body: ''};
+  const mat = phaseFilter < 0 ? 'todo el material' : `la fase «${esc(phaseName(phaseFilter))}»`;
+  const base = `<i>N</i> = ${n} observaciones de ${mat}, registradas con un intervalo de ${S.interval} s`;
+  let t = 0, f = 0, cat = '', body = '';
+  const c = catCounts(list);
+
+  cat += apaTable(++t, 'Distribución de las observaciones según la categoría de acción OWAS',
+    [{t: 'Categoría'}, {t: 'Significado'}, {t: '<i>n</i>', n: 1}, {t: '%', n: 1}],
+    [...CATS.map((k, i) => ({c: [`${i + 1}. ${k.t}`, k.d, c[i], fmtP(c[i] / n * 100)]})), {total: 1, c: ['Total', '', n, fmtP(100)]}],
+    `${base}. Categorías según el método OWAS (Karhu et al., 1977).`);
+  cat += apaFigure(++f, 'Porcentaje de observaciones en cada categoría de acción', figCategories(c, n),
+    `${base}. El color indica la categoría de acción.`);
+
+  if (phaseFilter < 0 && S.phases.length > 1){
+    cat += apaTable(++t, 'Distribución de las categorías de acción por fase de trabajo',
+      [{t: 'Fase'}, {t: '<i>n</i>', n: 1}, {t: '% del total', n: 1}, ...[1, 2, 3, 4].map(k => ({t: `Cat. ${k} (%)`, n: 1}))],
+      S.phases.map((p, i) => { const l = S.obs.filter(o => o.p === i), m = l.length, cc = catCounts(l);
+        return {c: [esc(phaseName(i)), m, fmtP(m / n * 100), ...cc.map(x => m ? fmtP(x / m * 100) : '—')]}; }),
+      `Los porcentajes de cada categoría se calculan sobre las observaciones de la fase. — = fase sin observaciones.`);
+    cat += apaFigure(++f, 'Distribución de las categorías de acción en cada fase de trabajo', figPhases(),
+      `Cada barra suma el 100 % de las observaciones de la fase. Se omiten las etiquetas de los valores menores de 10 %.`);
+  }
+
+  const freq = new Map(); list.forEach(o => { const k = codeStr(o); freq.set(k, (freq.get(k) || 0) + 1); });
+  const codes = [...freq.entries()].map(([k, m]) => ({k, m, cat: catOf({b: +k[0], a: +k[1], l: +k[2], w: +k[3]})}))
+    .sort((x, y) => y.cat - x.cat || y.m - x.m || x.k.localeCompare(y.k));
+  cat += apaTable(++t, 'Frecuencia de los códigos de postura observados',
+    [{t: 'Código'}, {t: 'Espalda'}, {t: 'Brazos'}, {t: 'Piernas'}, {t: 'Carga'}, {t: 'Categoría', n: 1}, {t: '<i>n</i>', n: 1}, {t: '%', n: 1}],
+    codes.map(r => ({c: [r.k, ...PARTS.map((p, i) => p.opts[+r.k[i] - 1]), r.cat, r.m, fmtP(r.m / n * 100)]})),
+    `${base}. Cada código combina los dígitos de espalda, brazos, piernas y carga. Ordenado de mayor a menor categoría y frecuencia.`);
+
+  const rows = [];
+  PARTS.forEach(p => p.opts.forEach((name, i) => {
+    const m = list.filter(o => o[p.key] === i + 1).length, pc = m / n * 100;
+    rows.push({c: [i ? '' : p.name, i + 1, name, m, fmtP(pc), BODY[p.key] ? (m ? bodyCat(p.key, i, pc) : '—') : '—']});
+  }));
+  body += apaTable(++t, 'Frecuencia de cada postura por parte del cuerpo y categoría de acción correspondiente',
+    [{t: 'Parte del cuerpo'}, {t: 'Código', n: 1}, {t: 'Postura'}, {t: '<i>n</i>', n: 1}, {t: '%', n: 1}, {t: 'Categoría', n: 1}],
+    rows, `${base}. La categoría de cada postura depende del porcentaje del tiempo que se mantiene (Karhu et al., 1977). La carga no tiene clasificación por tiempo. — = no aplica o sin observaciones.`);
+  body += apaFigure(++f, 'Porcentaje del tiempo en cada postura de espalda, brazos, piernas y carga', figBody(list),
+    `${base}. El color y la etiqueta indican la categoría de acción según el tiempo en la postura. Las barras grises corresponden a la carga, que no tiene esa clasificación.`);
+
+  const d = list.filter(o => o.det);
+  if (d.length){
+    const row = (name, fn) => { const ok = d.filter(fn).length; return {c: [name, ok, fmtP(ok / d.length * 100)]}; };
+    body += apaTable(++t, 'Concordancia entre la propuesta automática y el código registrado',
+      [{t: 'Parte del cuerpo'}, {t: 'Coincidencias (<i>n</i>)', n: 1}, {t: '%', n: 1}],
+      [row('Espalda', o => +o.det[0] === o.b), row('Brazos', o => +o.det[1] === o.a), row('Piernas', o => +o.det[2] === o.l), row('Código completo sin carga', o => o.det === `${o.b}${o.a}${o.l}`)],
+      `<i>N</i> = ${d.length} observaciones con propuesta automática de MediaPipe Pose. Una coincidencia indica que la propuesta se aceptó sin corregirla.`);
+  }
+  return {cat, body};
+}
+const apaRefs = () => `<div class="apa-refs"><h3>Referencias</h3><p>${APA_REF}</p></div>`;
+function apaCard(part){
+  const html = apaSections()[part];
+  if (!html) return '';
+  return `<div class="card"><h2>${ico('list')}Tablas y figuras en formato APA</h2>
+    <p class="small muted" style="margin-top:-6px">Según la 7.ª edición de las normas APA. Se incluyen en la impresión con la casilla «Incluir tablas y figuras APA al imprimir».</p>
+    ${html}${apaRefs()}</div>`;
+}
 
 // ---- Lista de observaciones ----
 function renderList(){
@@ -1225,7 +1389,10 @@ $('#clearAll').onclick = () => { if (S.obs.length && confirm(`¿Eliminar las ${S
 // ---- Imprimir y copiar ----
 function doPrint(){
   const title = `<h1>WinOWAS — ${esc(fileName || 'Estudio OWAS')}</h1><p class="muted" style="margin-top:0">${esc(S.bg[2]||'')}</p>`;
-  $('#print').innerHTML = title + ($('#printBg').checked ? bgBlock() : '') + resultsHTML(false) + bodyHTML() + ($('#printImg').checked ? galleryHTML(filtered()) : '');
+  const apa = $('#printApa').checked ? apaSections() : null;
+  $('#print').innerHTML = title + ($('#printBg').checked ? bgBlock() : '') + resultsHTML(false) + bodyHTML() +
+    (apa && (apa.cat || apa.body) ? `<div class="card"><h2>Tablas y figuras</h2>${apa.cat}${apa.body}${apaRefs()}</div>` : '') +
+    ($('#printImg').checked ? galleryHTML(filtered()) : '');
   window.print();
 }
 function copyResults(){
@@ -1252,7 +1419,7 @@ $('#helpBox').innerHTML = `<h2>${ico('help')}Ayuda</h2>
   <ul><li><b>En vivo</b>: inicie el reloj. En cada pitido, seleccione la postura observada (o escriba sus dígitos) y pulse <b>Aceptar</b>.</li>
   <li><b>Video</b>: cargue un video MP4 o WebM. Avance fotograma a fotograma o salte a la siguiente muestra según el intervalo, codifique la postura y pulse <b>Aceptar</b>. El fotograma se guarda como imagen de la observación, y las marcas de colores sobre la barra de tiempo muestran lo ya registrado.</li>
   <li><b>Fotografías</b>: cargue una o varias fotos, codifique la postura de cada una y pulse <b>Aceptar</b>. La foto queda asociada a la observación.</li></ul></li>
-<li>En video y fotografías, <b>Detectar postura</b> (tecla <span class="kbd">D</span>) localiza a la persona con MediaPipe Pose, dibuja su esqueleto y propone los dígitos de espalda, brazos y piernas. La carga siempre se elige a mano. Con «Detectar al llegar a cada muestra o fotografía», el análisis queda en: revisar la propuesta, corregirla si hace falta y pulsar <span class="kbd">Enter</span>. Funciona mejor con una sola persona, de cuerpo entero y vista lateral o en diagonal. El giro de la espalda es la medida menos fiable. En la lista, «auto» indica que se aceptó la propuesta y «corregido» que se cambió.</li>
+<li>En video y fotografías, <b>Detección automática de postura</b> (tecla <span class="kbd">D</span>) localiza a la persona con MediaPipe Pose, dibuja su esqueleto y propone los dígitos de espalda, brazos y piernas. La carga siempre se elige a mano. Con «Detectar al llegar a cada muestra o fotografía», el análisis queda en: revisar la propuesta, corregirla si hace falta y pulsar <span class="kbd">Enter</span>. Funciona mejor con una sola persona, de cuerpo entero y vista lateral o en diagonal. El giro de la espalda es la medida menos fiable. En la lista, «auto» indica que se aceptó la propuesta y «corregido» que se cambió.</li>
 <li>Consulte <b>Categorías de acción</b> y <b>Por parte del cuerpo</b>. Puede filtrar por fase de trabajo.</li>
 <li>Use <b>Guardar</b> para crear un archivo .OWS compatible con el WinOWAS original, e <b>Imprimir</b> para imprimir o guardar en PDF.</li></ol>
 <h3>Categorías de acción</h3>
@@ -1261,7 +1428,7 @@ $('#helpBox').innerHTML = `<h2>${ico('help')}Ayuda</h2>
 <div class="grid2">${PARTS.map(p => `<div><b>${p.name}</b>${p.opts.map((o,i) => `<div class="bp-name" style="margin:4px 0"><b>${i+1}</b>${pict(p.key, i+1)}${o}</div>`).join('')}</div>`).join('')}</div>
 <h3 style="margin-top:14px">Archivos</h3>
 <p class="small">Esta aplicación abre y guarda archivos <b>.OWS</b> del WinOWAS original, que contienen solo los datos. Los estudios con imágenes se guardan como proyecto <b>.owsp</b>, que incluye cada imagen. El video original no se guarda dentro del proyecto: conserve el archivo de video para volver a revisarlo. «Unir archivo» añade las observaciones de otro archivo al estudio actual. El trabajo se guarda además automáticamente en este navegador, pero conviene guardar el archivo. No se admiten los archivos del OWAS para DOS.</p>
-<p class="small muted">WinOWAS Web 3.0. Tablas de clasificación tomadas del WinOWAS original (Universidad Tecnológica de Tampere, 1996). Detección de posturas con MediaPipe Pose (© Google LLC, licencia Apache 2.0), incluido en este archivo.</p>`;
+<p class="small muted">WinOWAS Web 3.1. Tablas de clasificación tomadas del WinOWAS original (Universidad Tecnológica de Tampere, 1996). Detección de posturas con MediaPipe Pose (© Google LLC, licencia Apache 2.0), incluido en este archivo.</p>`;
 
 // ---- Inicio ----
 document.querySelector('.top .actions').addEventListener('click', e => {

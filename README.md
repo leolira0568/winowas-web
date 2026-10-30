@@ -18,10 +18,14 @@ El WinOWAS original era un programa de Windows 3.x de 16 bits (Visual Basic 3) q
   - **En vivo**: reloj con aviso sonoro en cada intervalo.
   - **Video** *(nuevo en 2.0)*: carga un video MP4 o WebM y lo revisa fotograma a fotograma, segundo a segundo o saltando a cada instante de muestreo según el intervalo. Al aceptar, el fotograma se guarda como imagen de la observación y queda marcado con su color de categoría en la barra de tiempo.
   - **Fotografías** *(nuevo en 2.0)*: carga varias fotos y registra una observación por foto, con su imagen.
-- **Detección automática de posturas** *(nuevo en 3.0)*: en los modos Video y Fotografías, **Detectar postura** (tecla `D`) localiza a la persona con [MediaPipe Pose](https://ai.google.dev/edge/mediapipe/solutions/vision/pose_landmarker), dibuja su esqueleto y propone los dígitos de espalda, brazos y piernas, con los ángulos medidos. La carga se elige siempre a mano. Puede detectar automáticamente al llegar a cada muestra o foto. La lista marca cada código como «auto» (aceptado) o «corregido», y los resultados muestran la concordancia por parte del cuerpo. Los umbrales se pueden ajustar.
+- **Detección automática de posturas** *(nuevo en 3.0)*: en los modos Video y Fotografías, **Detección automática de postura** (tecla `D`) localiza a la persona con [MediaPipe Pose](https://ai.google.dev/edge/mediapipe/solutions/vision/pose_landmarker), dibuja su esqueleto y propone los dígitos de espalda, brazos y piernas, con los ángulos medidos. La carga se elige siempre a mano. Puede detectar automáticamente al llegar a cada muestra o foto. La lista marca cada código como «auto» (aceptado) o «corregido», y los resultados muestran la concordancia por parte del cuerpo. Los umbrales se pueden ajustar.
 - **Imágenes** *(nuevo en 2.0)*: miniaturas en la lista de observaciones, galería ordenada por riesgo en los resultados, visor ampliado con salto al momento del video, e impresión de las imágenes en el informe.
 - **Categorías de acción**: distribución en las categorías 1–4 con sus recomendaciones, desglose por fase de trabajo y posturas agrupadas por categoría.
 - **Por parte del cuerpo**: porcentaje del tiempo en cada postura de espalda, brazos y piernas, comparado con los límites de cada categoría.
+- **Tablas y figuras en formato APA (7.ª edición)** *(nuevo en 3.1)*: número en negrita, título en cursiva, tablas solo con líneas horizontales, «Nota.» con el tamaño de la muestra y referencia a Karhu et al. (1977). Numeración correlativa en todo el informe:
+  - *Categorías de acción*: distribución por categoría (tabla y figura), distribución por fase (tabla y figura, si hay varias fases) y frecuencia de los códigos de postura.
+  - *Por parte del cuerpo*: frecuencia de cada postura con su categoría (tabla y figura) y concordancia con la detección automática.
+  - Se incluyen en la impresión con la casilla «Incluir tablas y figuras APA al imprimir».
 - **Archivos**: abrir, guardar, guardar como y unir archivos `.OWS` (solo datos, compatibles con el original) y proyectos `.owsp` (datos más imágenes).
 - **Imprimir o guardar en PDF**, y copiar los resultados al portapapeles (se pegan como tabla en Excel o Word).
 - **Autoguardado** en el navegador para no perder trabajo.
@@ -110,7 +114,8 @@ El script incrusta en base64 los archivos de [`vendor/mediapipe/`](vendor/mediap
 
 ## Versiones
 
-- **3.0**: detección automática de posturas con MediaPipe, incluida en el archivo para funcionar sin internet.
+- **3.1**: tablas y figuras en formato APA 7 en pantalla y en la impresión; botón «Detección automática de postura» destacado en azul.
+- **[3.0](https://github.com/leolira0568/winowas-web/releases/tag/v3.0)**: detección automática de posturas con MediaPipe, incluida en el archivo para funcionar sin internet.
 - **[2.0](https://github.com/leolira0568/winowas-web/releases/tag/v2.0)**: análisis por video fotograma a fotograma y por fotografías, con una imagen por observación y el formato `.owsp`.
 - **[1.0](https://github.com/leolira0568/winowas-web/releases/tag/v1.0)**: observación en vivo, compatible con `.OWS`.
 
