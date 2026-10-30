@@ -1,0 +1,1296 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>WinOWAS</title>
+<style>
+:root{
+  --bg:#f3f2ef; --surface:#fcfcfb; --surface-2:#f7f6f3; --line:#dcdad3; --line-soft:#ebe9e3;
+  --ink:#0b0b0b; --ink-2:#52514e; --ink-3:#6b6962;
+  --accent:#2a78d6; --accent-ink:#ffffff; --accent-soft:#e3eefb;
+  --c1:#0ca30c; --c2:#fab219; --c3:#ec835a; --c4:#d03b3b;
+  --c1-soft:#d8f0d8; --c2-soft:#fdeec9; --c3-soft:#fbe0d4; --c4-soft:#f5d3d3;
+  --radius:10px;
+}
+*{box-sizing:border-box}
+[hidden]{display:none !important}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font:16px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+button,input,select{font:inherit;color:inherit}
+button{cursor:pointer;transition:background-color .15s ease,border-color .15s ease,color .15s ease}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px;border-radius:6px}
+.top :focus-visible{outline-color:#8cc0ff}
+h2{font-size:19px;margin:0 0 12px;display:flex;align-items:center;gap:8px}
+h3{font-size:16px;margin:0 0 10px}
+/* Iconos: trazo monocromático que hereda el color del texto */
+.ico{width:18px;height:18px;flex:none;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+h2 .ico{width:20px;height:20px;color:var(--ink-2)}
+.pict{width:34px;height:34px;flex:none;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round;color:var(--ink-2)}
+.opt.sel .pict{color:var(--accent)}
+.bp-name .pict{width:26px;height:26px;vertical-align:middle;margin-right:6px}
+button.btn,.top .actions button,.tabs button{display:inline-flex;align-items:center;justify-content:center;gap:7px}
+.btn.icon-only{padding:8px;min-width:40px}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+td.postura{white-space:nowrap}
+
+/* Modos de observación, video y fotografías */
+.seg{display:inline-flex;background:#e6e4de;border-radius:10px;padding:4px;gap:4px;margin-bottom:12px;flex-wrap:wrap}
+.seg button{border:0;background:none;border-radius:7px;padding:8px 14px;min-height:40px;display:inline-flex;align-items:center;gap:7px;color:var(--ink-2)}
+.seg button.on{background:var(--surface);color:var(--ink);font-weight:600;box-shadow:0 1px 2px rgba(0,0,0,.12)}
+.media-top{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:10px}
+.stage{position:relative;background:#141414;border-radius:8px;display:grid;place-items:center;min-height:220px;overflow:hidden}
+.stage video,.stage img{display:block;max-width:100%;max-height:58vh}
+.stage img:not([src]),.stage video:not([src]){display:none}
+.stage-empty{color:#cfcdc6;text-align:center;padding:24px;margin:0;max-width:420px}
+.timeline{position:relative;margin-top:10px}
+.timeline input{width:100%;margin:0}
+.marks{position:relative;height:10px;margin:0 8px 2px}
+.marks button{position:absolute;top:0;width:6px;height:10px;margin-left:-3px;border:0;border-radius:2px;padding:0;min-height:0}
+.marks .k1{background:var(--c1)}.marks .k2{background:var(--c2)}.marks .k3{background:var(--c3)}.marks .k4{background:var(--c4)}
+.vctrl{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-top:8px}
+.vctrl select,.vctrl input[type=number]{width:auto;padding:6px 8px}
+.vctrl input[type=number]{width:72px}
+.vctrl label{display:inline-flex;align-items:center;gap:6px;margin-left:6px}
+.tc{font-variant-numeric:tabular-nums;font-weight:600;padding:0 8px}
+.thumbs{display:flex;gap:6px;overflow-x:auto;padding:8px 0 2px}
+.thumbs button{position:relative;flex:none;padding:0;border:2px solid transparent;border-radius:7px;background:#141414;min-height:0}
+.thumbs button.on{border-color:var(--accent)}
+.thumbs img{display:block;height:60px;border-radius:5px}
+.thumbs .done{position:absolute;right:3px;bottom:3px;width:18px;height:18px;border-radius:50%;background:var(--c1);color:#fff;display:grid;place-items:center}
+.thumbs .done .ico{width:12px;height:12px;stroke-width:3}
+.recent img{height:22px;border-radius:3px;vertical-align:middle;margin-right:5px}
+.thumb{padding:0;border:1px solid var(--line);border-radius:6px;background:#141414;min-height:0;display:block}
+.thumb img{display:block;width:76px;height:56px;object-fit:cover;border-radius:5px}
+.gallery{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:12px}
+.gallery figure{margin:0;border:1px solid var(--line-soft);border-radius:8px;overflow:hidden;background:#fff;break-inside:avoid}
+.gallery button{display:block;width:100%;padding:0;border:0;background:#141414;min-height:0}
+.gallery img{display:block;width:100%;aspect-ratio:4/3;object-fit:contain}
+.gallery figcaption{padding:7px 9px;font-size:13px;display:flex;gap:6px 8px;flex-wrap:wrap;align-items:center}
+dialog#viewer{border:0;border-radius:12px;padding:14px;max-width:min(960px,94vw);width:auto}
+dialog#viewer::backdrop{background:rgba(0,0,0,.6)}
+#viewImg{display:block;max-width:100%;max-height:70vh;margin:0 auto 10px;border-radius:6px;background:#141414}
+
+/* Detección automática de postura */
+.stage canvas.overlay{position:absolute;left:0;top:0;pointer-events:none}
+.detect{border-top:1px solid var(--line-soft);margin-top:12px;padding-top:4px}
+.detect-status{margin:8px 0 4px;min-height:1.5em;display:flex;gap:6px 10px;flex-wrap:wrap;align-items:center}
+.detect-status .chip{background:var(--surface-2);border:1px solid var(--line-soft);border-radius:6px;padding:1px 7px;font-variant-numeric:tabular-nums}
+.detect-status .warn{color:#8a4b00}
+.detect details summary{cursor:pointer;color:var(--ink-2);padding:4px 0}
+.detect-cfg{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:8px 16px;margin:8px 0}
+.detect-cfg label{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.detect-cfg input[type=number]{width:80px;padding:5px 8px}
+.tag{display:inline-block;font-size:12px;border-radius:5px;padding:0 6px;margin-left:6px;border:1px solid var(--line);color:var(--ink-2);font-weight:500;vertical-align:middle}
+.tag.ok{border-color:#9bd29b;background:#eef8ee;color:#185c18}
+.tag.fix{border-color:#f1c48f;background:#fdf3e6;color:#7a4300}
+td.postura .pict{width:28px;height:28px}
+@media (prefers-reduced-motion:reduce){*{animation:none !important;transition:none !important}}
+.muted{color:var(--ink-2)}
+.small{font-size:13px}
+
+/* Barra superior */
+.top{position:sticky;top:0;z-index:5;background:#1f2a37;color:#fff;display:flex;flex-wrap:wrap;gap:8px 16px;align-items:center;padding:10px 16px}
+.brand{font-weight:700;font-size:18px;letter-spacing:.2px}
+.brand .fname{font-weight:400;font-size:14px;opacity:.8;margin-left:8px}
+.brand .dirty{color:#fab219;margin-left:4px}
+.top .actions{display:flex;flex-wrap:wrap;gap:6px;margin-left:auto}
+.top .actions button{background:#2f3d4f;border:1px solid #435469;color:#fff;border-radius:8px;padding:6px 12px;min-height:40px}
+.top .actions button:hover{background:#3a4a5f}
+.tabs{display:flex;gap:2px;overflow-x:auto;scrollbar-width:thin;background:#e6e4de;padding:0 12px;border-bottom:1px solid var(--line)}
+.tabs button{background:none;border:0;padding:12px 14px;border-bottom:3px solid transparent;color:var(--ink-2);white-space:nowrap}
+.tabs button.on{color:var(--ink);border-bottom-color:var(--accent);font-weight:600}
+main{max-width:1180px;margin:0 auto;padding:16px}
+section.tab{display:none}
+section.tab.on{display:block}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:16px;margin-bottom:16px}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px}
+.btn{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:8px 14px;min-height:40px}
+.btn:hover{background:var(--surface-2)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink);font-weight:600}
+.btn.primary:hover{filter:brightness(1.08)}
+.btn.danger{color:var(--c4)}
+.btn:disabled{opacity:.45;cursor:default}
+label.field{display:block;margin-bottom:10px}
+label.field span{display:block;font-size:13px;color:var(--ink-2);margin-bottom:3px}
+input[type=text],input[type=number],select{width:100%;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:#fff}
+.phase-row{display:flex;gap:8px;align-items:center;margin-bottom:8px}
+.phase-row .num{width:28px;color:var(--ink-3);text-align:right}
+.phase-row input{flex:1}
+
+/* Observación */
+.obs-head{display:flex;flex-wrap:wrap;gap:16px;align-items:center;justify-content:space-between}
+.clock{font-variant-numeric:tabular-nums;font-size:34px;font-weight:700;min-width:110px}
+.clock.alert{color:var(--c4);animation:pulse .5s ease-in-out 3}
+@keyframes pulse{50%{opacity:.3}}
+.code-display{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.code-digits{display:flex;gap:4px}
+.code-digits span{display:inline-grid;place-items:center;width:40px;height:48px;border:2px solid var(--line);border-radius:8px;background:#fff;font-size:24px;font-weight:700;font-variant-numeric:tabular-nums}
+.code-digits span.next{border-color:var(--accent)}
+.parts{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-top:14px}
+.part h3{display:flex;justify-content:space-between}
+.opt{display:flex;width:100%;text-align:left;gap:10px;align-items:center;background:#fff;border:1px solid var(--line);border-radius:8px;padding:9px 10px;margin-bottom:6px;min-height:44px}
+.opt:hover{border-color:var(--accent)}
+.opt.sel{background:var(--accent-soft);border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent)}
+.opt b{display:inline-grid;place-items:center;min-width:26px;height:26px;border-radius:6px;background:var(--surface-2);border:1px solid var(--line-soft);font-variant-numeric:tabular-nums}
+.obs-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:6px}
+.recent{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.recent span{font-variant-numeric:tabular-nums;padding:3px 8px;border-radius:6px;background:var(--surface-2);border:1px solid var(--line-soft);font-size:13px}
+
+/* Categorías */
+.cat{display:inline-flex;align-items:center;gap:6px;font-weight:600;white-space:nowrap}
+.cat i{display:inline-grid;place-items:center;width:22px;height:22px;border-radius:6px;font-style:normal;font-size:13px;color:#111}
+.cat i.k1{background:var(--c1);color:#fff}.cat i.k2{background:var(--c2)}.cat i.k3{background:var(--c3)}.cat i.k4{background:var(--c4);color:#fff}
+
+/* Gráficas */
+.stack{display:flex;gap:2px;height:34px;border-radius:6px;overflow:hidden;background:var(--line-soft)}
+.stack div{display:grid;place-items:center;font-size:13px;font-weight:600;min-width:0;overflow:hidden;white-space:nowrap}
+.stack .k1{background:var(--c1);color:#fff}.stack .k2{background:var(--c2)}.stack .k3{background:var(--c3)}.stack .k4{background:var(--c4);color:#fff}
+.stack.thin{height:14px;border-radius:4px}
+.legend{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:10px;margin-top:14px}
+.legend > div{display:flex;gap:10px;align-items:flex-start}
+.legend p{margin:0;font-size:13px;color:var(--ink-2)}
+table{border-collapse:collapse;width:100%}
+th,td{padding:7px 8px;border-bottom:1px solid var(--line-soft);text-align:left;vertical-align:middle}
+th{font-size:13px;color:var(--ink-2);font-weight:600}
+td.n,th.n{text-align:right;font-variant-numeric:tabular-nums}
+.tbl-wrap{overflow-x:auto}
+.cats4{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px}
+.cats4 .col{border:1px solid var(--line-soft);border-radius:8px;overflow:hidden}
+.cats4 .col h3{margin:0;padding:8px 10px;background:var(--surface-2);border-bottom:1px solid var(--line-soft)}
+.cats4 .col .scroll{max-height:320px;overflow-y:auto}
+.bp-row{display:grid;grid-template-columns:minmax(150px,1.3fr) 2.2fr auto;gap:12px;align-items:center;padding:7px 0;border-bottom:1px solid var(--line-soft)}
+.bp-name{font-size:14px}
+.bp-name b{font-variant-numeric:tabular-nums;color:var(--ink-3);margin-right:6px}
+.track{position:relative;height:22px;display:flex;gap:2px;border-radius:4px;overflow:hidden}
+.track .band{height:100%}
+.track .band.k1{background:var(--c1-soft)}.track .band.k2{background:var(--c2-soft)}.track .band.k3{background:var(--c3-soft)}.track .band.k4{background:var(--c4-soft)}
+.track .val{position:absolute;left:0;top:7px;height:8px;background:var(--ink);border-radius:0 4px 4px 0}
+.bp-out{min-width:130px;text-align:right;font-variant-numeric:tabular-nums;display:flex;gap:8px;justify-content:flex-end;align-items:center}
+.scale{display:grid;grid-template-columns:minmax(150px,1.3fr) 2.2fr auto;gap:12px;font-size:12px;color:var(--ink-3)}
+.scale .ticks{display:flex;justify-content:space-between}
+.scale .ph{min-width:130px}
+.filter{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:16px}
+.filter select{width:auto;min-width:220px}
+.empty{padding:30px;text-align:center;color:var(--ink-2)}
+.notice{background:var(--accent-soft);border:1px solid #bcd6f5;border-radius:8px;padding:10px 12px;margin-bottom:16px;display:flex;justify-content:space-between;gap:10px;align-items:center}
+.kbd{display:inline-block;border:1px solid var(--line);border-bottom-width:2px;border-radius:4px;padding:0 5px;font-size:12px;background:#fff}
+#print{display:none}
+
+@media (max-width:760px){
+  .top{padding:8px 12px}
+  .top .actions{margin-left:0;gap:4px}
+  .top .actions button{min-width:44px;min-height:44px;padding:0}
+  .top .actions .lbl{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+  .tabs button{padding:12px 10px}
+}
+@media (max-height:600px){.top{position:static}}
+@media (max-width:640px){
+  .bp-row,.scale{grid-template-columns:1fr;gap:4px}
+  .scale .lab,.scale .ph{display:none}
+  .bp-out{justify-content:flex-start}
+}
+@media print{
+  body{background:#fff}
+  .top,.tabs,main,.notice{display:none !important}
+  #print{display:block;padding:0}
+  .card{border:0;padding:0;margin-bottom:18px;break-inside:avoid}
+  .stack div,.track .band,.track .val,.cat i{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .cats4 .col .scroll{max-height:none}
+  h1{font-size:20px;margin:0 0 4px}
+}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="brand">WinOWAS<span class="fname" id="fname"></span><span class="dirty" id="dirty"></span></div>
+  <div class="actions">
+    <button data-act="new" data-icon="new" title="Empezar un estudio nuevo">Nuevo</button>
+    <button data-act="open" data-icon="open" title="Abrir un archivo .OWS">Abrir…</button>
+    <button data-act="join" data-icon="join" title="Añadir las observaciones de otro archivo .OWS">Unir archivo…</button>
+    <button data-act="save" data-icon="save" title="Guardar el archivo .OWS">Guardar</button>
+    <button data-act="saveas" data-icon="saveas" title="Guardar con otro nombre">Guardar como…</button>
+    <button data-act="print" data-icon="print" title="Imprimir o guardar en PDF">Imprimir</button>
+  </div>
+</header>
+<nav class="tabs" id="tabs">
+  <button data-tab="datos" data-icon="info" class="on">Datos generales</button>
+  <button data-tab="observar" data-icon="eye">Observar</button>
+  <button data-tab="resultados" data-icon="chart">Categorías de acción</button>
+  <button data-tab="partes" data-icon="body">Por parte del cuerpo</button>
+  <button data-tab="lista" data-icon="list">Observaciones</button>
+  <button data-tab="ayuda" data-icon="help">Ayuda</button>
+</nav>
+<main>
+  <div class="notice" id="restored" hidden><span style="display:flex;gap:8px;align-items:center" data-icon="history">Se recuperó el trabajo que no se había guardado.</span><button class="btn" id="restoredClose" data-icon="close">Cerrar</button></div>
+
+  <section class="tab on" id="tab-datos">
+    <div class="grid2">
+      <div class="card">
+        <h2 data-icon="info">Información general</h2>
+        <div id="bgFields"></div>
+        <label class="field"><span>Intervalo de tiempo (segundos)</span><input type="number" min="1" id="interval"></label>
+      </div>
+      <div class="card">
+        <h2 data-icon="layers">Fases de trabajo</h2>
+        <div id="phases"></div>
+        <button class="btn" id="addPhase" data-icon="plus">Añadir fase</button>
+        <p class="small muted">Cada observación se asigna a una fase. Una fase solo se puede eliminar si no tiene observaciones.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="tab" id="tab-observar">
+    <div class="seg" id="modeSeg" role="group" aria-label="Modo de observación">
+      <button data-mode="live" data-icon="timer" aria-pressed="true" class="on">En vivo</button>
+      <button data-mode="video" data-icon="video" aria-pressed="false">Video</button>
+      <button data-mode="photo" data-icon="image" aria-pressed="false">Fotografías</button>
+    </div>
+    <div class="card" id="mediaCard" hidden>
+      <div id="videoPane">
+        <div class="media-top">
+          <button class="btn" id="loadVideo" data-icon="video">Cargar video…</button>
+          <span class="muted small" id="videoName">Ningún video cargado</span>
+        </div>
+        <div class="stage"><video id="vid" playsinline muted preload="auto"></video><canvas class="overlay" id="ovVideo" aria-hidden="true"></canvas><p class="stage-empty" id="vidEmpty">Cargue un video (MP4 o WebM) para revisarlo fotograma a fotograma.</p></div>
+        <div class="timeline"><div class="marks" id="marks"></div><input type="range" id="seek" min="0" max="0" step="0.01" value="0" aria-label="Posición del video"></div>
+        <div class="vctrl">
+          <button class="btn icon-only" id="vPrevS" data-icon="skipB" title="Muestra anterior (B)" aria-label="Muestra anterior"></button>
+          <button class="btn icon-only" id="vBack1" data-icon="chevsL" title="Retroceder 1 s (Mayús + ←)" aria-label="Retroceder 1 segundo"></button>
+          <button class="btn icon-only" id="vBackF" data-icon="chevL" title="Fotograma anterior (←)" aria-label="Fotograma anterior"></button>
+          <button class="btn primary icon-only" id="vPlay" title="Reproducir o pausar (Espacio)" aria-label="Reproducir"></button>
+          <button class="btn icon-only" id="vFwdF" data-icon="chevR" title="Fotograma siguiente (→)" aria-label="Fotograma siguiente"></button>
+          <button class="btn icon-only" id="vFwd1" data-icon="chevsR" title="Avanzar 1 s (Mayús + →)" aria-label="Avanzar 1 segundo"></button>
+          <button class="btn icon-only" id="vNextS" data-icon="skipF" title="Muestra siguiente (N)" aria-label="Muestra siguiente"></button>
+          <span class="tc" id="vTime">00:00.00 / 00:00.00</span>
+          <label class="small">Velocidad <select id="vRate"><option value="0.25">0,25×</option><option value="0.5">0,5×</option><option value="1" selected>1×</option><option value="2">2×</option></select></label>
+          <label class="small">Fotogramas/s <input type="number" id="vFps" min="1" max="240" value="30"></label>
+          <label class="small"><input type="checkbox" id="vAuto" checked> Al aceptar, saltar a la siguiente muestra</label>
+        </div>
+      </div>
+      <div id="photoPane" hidden>
+        <div class="media-top">
+          <button class="btn" id="loadPhotos" data-icon="image">Cargar fotografías…</button>
+          <span class="muted small" id="photoInfo">Ninguna fotografía cargada</span>
+        </div>
+        <div class="stage"><img id="photo" alt=""><canvas class="overlay" id="ovPhoto" aria-hidden="true"></canvas><p class="stage-empty" id="photoEmpty">Cargue una o varias fotografías (JPG, PNG o WebP). Al aceptar, cada observación guarda su fotografía.</p></div>
+        <div class="vctrl">
+          <button class="btn icon-only" id="pPrev" data-icon="chevL" title="Fotografía anterior (←)" aria-label="Fotografía anterior"></button>
+          <button class="btn icon-only" id="pNext" data-icon="chevR" title="Fotografía siguiente (→)" aria-label="Fotografía siguiente"></button>
+          <label class="small"><input type="checkbox" id="pAuto" checked> Al aceptar, pasar a la siguiente pendiente</label>
+        </div>
+        <div class="thumbs" id="thumbs"></div>
+      </div>
+      <div class="detect">
+        <div class="vctrl">
+          <button class="btn" id="detectBtn" data-icon="scan">Detectar postura <span class="kbd">D</span></button>
+          <label class="small"><input type="checkbox" id="autoDetect"> Detectar al llegar a cada muestra o fotografía</label>
+          <label class="small"><input type="checkbox" id="bakeSkel" checked> Dibujar el esqueleto en la imagen guardada</label>
+        </div>
+        <p class="small detect-status" id="detectStatus" role="status"></p>
+        <details class="small">
+          <summary>Ajustes de detección</summary>
+          <div class="detect-cfg">
+            <label>Espalda inclinada desde (°) <input type="number" data-cfg="trunk" min="5" max="60"></label>
+            <label>Espalda girada o inclinada de lado desde (°) <input type="number" data-cfg="twist" min="5" max="60"></label>
+            <label>Rodilla flexionada por debajo de (°) <input type="number" data-cfg="knee" min="90" max="175"></label>
+            <label>Pie levantado desde (% de la pierna) <input type="number" data-cfg="lift" min="3" max="40"></label>
+            <label><input type="checkbox" data-cfg="walk"> Detectar «caminando» en video (compara con 0,5 s después)</label>
+            <label>Caminando si la cadera se desplaza más de (% del tronco) <input type="number" data-cfg="walkDist" min="5" max="100"></label>
+          </div>
+          <p class="muted">La detección usa MediaPipe Pose y solo propone espalda, brazos y piernas. La carga se elige siempre a mano. Revise cada propuesta antes de aceptarla.</p>
+        </details>
+      </div>
+    </div>
+    <div class="card">
+      <div class="obs-head">
+        <div id="liveBox" style="display:flex;align-items:center;gap:14px;flex-wrap:wrap">
+          <div class="clock" id="clock">--</div>
+          <button class="btn primary" id="clockBtn" data-icon="play">Iniciar reloj</button>
+          <span class="muted small" id="clockInfo"></span>
+        </div>
+        <div class="code-display">
+          <div class="code-digits" id="digits"></div>
+          <span id="liveCat"></span>
+        </div>
+      </div>
+      <div class="obs-actions">
+        <button class="btn primary" id="accept" data-icon="check">Aceptar <span class="kbd">Enter</span></button>
+        <button class="btn" id="repeat" data-icon="repeat">Repetir anterior <span class="kbd">R</span></button>
+        <button class="btn" id="takeback" data-icon="undo">Deshacer última <span class="kbd">Supr</span></button>
+        <button class="btn" id="clearSel" data-icon="eraser">Limpiar <span class="kbd">Esc</span></button>
+        <span class="muted small" style="align-self:center" id="obsCount"></span>
+      </div>
+      <div class="recent" id="recent"></div>
+    </div>
+    <div class="parts" id="parts"></div>
+    <p class="small muted">Atajo de teclado: escribe los dígitos del código en orden (espalda, brazos, piernas, carga y, si hay varias fases, número de fase) y pulsa <span class="kbd">Enter</span>. <span class="kbd">Retroceso</span> borra el último dígito. En modo video: <span class="kbd">Espacio</span> reproduce o pausa, <span class="kbd">←</span> <span class="kbd">→</span> cambian de fotograma, <span class="kbd">Mayús</span> + flecha salta 1 s y <span class="kbd">B</span> / <span class="kbd">N</span> van a la muestra anterior o siguiente.</p>
+  </section>
+
+  <section class="tab" id="tab-resultados">
+    <div class="filter"><label>Material: <select class="phaseFilter"></select></label>
+      <label><input type="checkbox" id="printBg" checked> Incluir información general al imprimir</label>
+      <label><input type="checkbox" id="printImg" checked> Incluir imágenes al imprimir</label>
+      <button class="btn" id="copyBtn" data-icon="copy">Copiar resultados</button></div>
+    <div id="results"></div>
+  </section>
+
+  <section class="tab" id="tab-partes">
+    <div class="filter"><label>Material: <select class="phaseFilter"></select></label></div>
+    <div id="bodyparts"></div>
+  </section>
+
+  <section class="tab" id="tab-lista">
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:10px">
+        <h2 style="margin:0" data-icon="list">Observaciones registradas</h2>
+        <button class="btn danger" id="clearAll" data-icon="trash">Borrar todas</button>
+      </div>
+      <div class="tbl-wrap" id="obsTable"></div>
+    </div>
+  </section>
+
+  <section class="tab" id="tab-ayuda">
+    <div class="card" id="helpBox"></div>
+  </section>
+</main>
+<div id="print"></div>
+<input type="file" id="fileOpen" accept=".ows,.OWS,.owsp" hidden>
+<input type="file" id="fileJoin" accept=".ows,.OWS,.owsp" hidden>
+<input type="file" id="fileVideo" accept="video/*" hidden>
+<input type="file" id="filePhotos" accept="image/*" multiple hidden>
+<dialog id="viewer" aria-label="Imagen de la observación">
+  <img id="viewImg" alt="">
+  <div id="viewInfo"></div>
+  <div class="vctrl"><button class="btn" id="viewJump" data-icon="video">Ir a este momento del video</button><button class="btn" id="viewClose" data-icon="close">Cerrar</button></div>
+</dialog>
+
+<script>
+"use strict";
+// ---- Datos del método OWAS (tomados de LUOKAT.DAT y LUOKAT3.DAT del WinOWAS original) ----
+const PARTS = [
+  {key:'b', name:'Espalda', opts:['Recta','Inclinada','Girada','Inclinada y girada']},
+  {key:'a', name:'Brazos', opts:['Ambos por debajo del hombro','Uno por encima del hombro','Ambos por encima del hombro']},
+  {key:'l', name:'Piernas', opts:['Sentado','De pie sobre ambas piernas rectas','De pie sobre una pierna recta','De pie, ambas rodillas flexionadas','De pie, una rodilla flexionada','Arrodillado','Caminando']},
+  {key:'w', name:'Carga', opts:['Menos de 10 kg','Entre 10 y 20 kg','Más de 20 kg']}
+];
+// Filas: espalda×brazos (12); columnas: piernas×carga (21)
+const TABLE = [
+ [1,1,1,1,1,1,1,1,1,2,2,2,2,2,2,1,1,1,1,1,1],
+ [1,1,1,1,1,1,1,1,1,2,2,2,2,2,2,1,1,1,1,1,1],
+ [1,1,1,1,1,1,1,1,1,2,2,3,2,2,3,1,1,1,1,1,2],
+ [2,2,3,2,2,3,2,2,3,3,3,3,3,3,3,2,2,2,2,3,3],
+ [2,2,3,2,2,3,2,3,3,3,4,4,3,4,4,3,3,4,2,3,4],
+ [3,3,4,2,2,3,3,3,3,3,4,4,4,4,4,4,4,4,2,3,4],
+ [1,1,1,1,1,1,1,1,2,3,3,3,4,4,4,1,1,1,1,1,1],
+ [2,2,3,1,1,1,1,1,2,4,4,4,4,4,4,3,3,3,1,1,1],
+ [2,2,3,1,1,1,2,3,3,4,4,4,4,4,4,4,4,4,1,1,1],
+ [2,3,3,2,2,3,2,2,3,4,4,4,4,4,4,4,4,4,2,3,4],
+ [3,3,4,2,3,4,3,3,4,4,4,4,4,4,4,4,4,4,2,3,4],
+ [4,4,4,2,3,4,3,3,4,4,4,4,4,4,4,4,4,4,2,3,4]
+];
+// Porcentaje del tiempo que corresponde a cada categoría (1..4), por postura de cada parte del cuerpo
+const BODY = {
+  b:[[100,0,0,0],[30,50,20,0],[20,30,50,0],[5,25,40,30]],
+  a:[[100,0,0,0],[30,50,20,0],[20,50,30,0]],
+  l:[[90,10,0,0],[80,20,0,0],[30,50,20,0],[5,25,40,30],[5,25,40,30],[20,30,50,0],[80,20,0,0]]
+};
+const CATS = [
+  {t:'Sin riesgo', d:'Postura normal y natural. No se requieren acciones.'},
+  {t:'Riesgo leve', d:'Postura con posible efecto dañino. Se requieren acciones correctivas en un futuro cercano.'},
+  {t:'Riesgo alto', d:'Postura con efecto dañino. Se requieren acciones correctivas lo antes posible.'},
+  {t:'Riesgo extremo', d:'Postura con efecto sumamente dañino. Se requieren acciones correctivas inmediatamente.'}
+];
+const BG_LABELS = ['Empresa','Departamento','Trabajo estudiado','Observador','Fecha','Hora'];
+
+// ---- Iconos (trazo 24×24) basados en Lucide, https://lucide.dev — licencia ISC, © Lucide Contributors ----
+const ICONS = {
+  new:'<path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M9 15h6"/><path d="M12 18v-6"/>',
+  open:'<path d="m6 14 1.5-2.9A2 2 0 0 1 9.24 10H20a2 2 0 0 1 1.94 2.5l-1.54 6a2 2 0 0 1-1.95 1.5H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h3.9a2 2 0 0 1 1.69.9l.81 1.2a2 2 0 0 0 1.67.9H18a2 2 0 0 1 2 2v2"/>',
+  join:'<circle cx="18" cy="18" r="3"/><circle cx="6" cy="6" r="3"/><path d="M6 21V9a9 9 0 0 0 9 9"/>',
+  save:'<path d="M15.2 3a2 2 0 0 1 1.4.6l3.8 3.8a2 2 0 0 1 .6 1.4V19a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z"/><path d="M17 21v-7a1 1 0 0 0-1-1H8a1 1 0 0 0-1 1v7"/><path d="M7 3v4a1 1 0 0 0 1 1h7"/>',
+  saveas:'<path d="M12.5 22H18a2 2 0 0 0 2-2V7l-5-5H6a2 2 0 0 0-2 2v9.5"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M13.4 15.6a1 1 0 1 0-3-3l-5 5a2 2 0 0 0-.5.85l-.84 2.87a.5.5 0 0 0 .62.62l2.87-.84a2 2 0 0 0 .85-.5z"/>',
+  print:'<path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><path d="M6 9V3a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v6"/><rect x="6" y="14" width="12" height="8" rx="1"/>',
+  info:'<circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/>',
+  eye:'<path d="M2.06 12.35a1 1 0 0 1 0-.7 10.75 10.75 0 0 1 19.88 0 1 1 0 0 1 0 .7 10.75 10.75 0 0 1-19.88 0"/><circle cx="12" cy="12" r="3"/>',
+  chart:'<path d="M3 3v16a2 2 0 0 0 2 2h16"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/>',
+  body:'<circle cx="12" cy="5" r="1"/><path d="m9 20 3-6 3 6"/><path d="m6 8 6 2 6-2"/><path d="M12 10v4"/>',
+  list:'<path d="M3 12h.01"/><path d="M3 18h.01"/><path d="M3 6h.01"/><path d="M8 12h13"/><path d="M8 18h13"/><path d="M8 6h13"/>',
+  help:'<circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><path d="M12 17h.01"/>',
+  layers:'<path d="M12.83 2.18a2 2 0 0 0-1.66 0L2.6 6.08a1 1 0 0 0 0 1.83l8.58 3.91a2 2 0 0 0 1.66 0l8.58-3.9a1 1 0 0 0 0-1.83Z"/><path d="m22 17.65-9.17 4.16a2 2 0 0 1-1.66 0L2 17.65"/><path d="m22 12.65-9.17 4.16a2 2 0 0 1-1.66 0L2 12.65"/>',
+  plus:'<path d="M5 12h14"/><path d="M12 5v14"/>',
+  play:'<path d="M6 3.9a1 1 0 0 1 1.5-.87l11.5 7.1a1 1 0 0 1 0 1.74L7.5 20.97A1 1 0 0 1 6 20.1z"/>',
+  stop:'<rect x="5" y="5" width="14" height="14" rx="2"/>',
+  check:'<path d="M20 6 9 17l-5-5"/>',
+  repeat:'<path d="m17 2 4 4-4 4"/><path d="M3 11v-1a4 4 0 0 1 4-4h14"/><path d="m7 22-4-4 4-4"/><path d="M21 13v1a4 4 0 0 1-4 4H3"/>',
+  undo:'<path d="M9 14 4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11"/>',
+  eraser:'<path d="m7 21-4.3-4.3c-1-1-1-2.5 0-3.4l9.6-9.6c1-1 2.5-1 3.4 0l5.6 5.6c1 1 1 2.5 0 3.4L13 21"/><path d="M22 21H7"/><path d="m5 11 9 9"/>',
+  copy:'<rect width="14" height="14" x="8" y="8" rx="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/>',
+  trash:'<path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2"/><path d="M10 11v6"/><path d="M14 11v6"/>',
+  close:'<path d="M18 6 6 18"/><path d="m6 6 12 12"/>',
+  history:'<path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M12 7v5l4 2"/>',
+  timer:'<path d="M10 2h4"/><path d="m12 14 3-3"/><circle cx="12" cy="14" r="8"/>',
+  video:'<path d="m16 13 5.22 3.48a.5.5 0 0 0 .78-.42V7.87a.5.5 0 0 0-.75-.43L16 10.5"/><rect x="2" y="6" width="14" height="12" rx="2"/>',
+  image:'<rect width="18" height="18" x="3" y="3" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.09-3.09a2 2 0 0 0-2.82 0L6 21"/>',
+  pause:'<rect x="14" y="4" width="4" height="16" rx="1"/><rect x="6" y="4" width="4" height="16" rx="1"/>',
+  chevL:'<path d="m15 18-6-6 6-6"/>',
+  chevR:'<path d="m9 18 6-6-6-6"/>',
+  chevsL:'<path d="m11 17-5-5 5-5"/><path d="m18 17-5-5 5-5"/>',
+  chevsR:'<path d="m6 17 5-5-5-5"/><path d="m13 17 5-5-5-5"/>',
+  skipB:'<path d="M19 20 9 12l10-8z"/><path d="M5 19V5"/>',
+  skipF:'<path d="m5 4 10 8-10 8z"/><path d="M19 5v14"/>',
+  scan:'<path d="M3 7V5a2 2 0 0 1 2-2h2"/><path d="M17 3h2a2 2 0 0 1 2 2v2"/><path d="M21 17v2a2 2 0 0 1-2 2h-2"/><path d="M7 21H5a2 2 0 0 1-2-2v-2"/><circle cx="12" cy="7.5" r="1.5"/><path d="M8.5 11h7"/><path d="M12 9.5v4"/><path d="m9.5 17.5 2.5-4 2.5 4"/>'
+};
+// Pictogramas de postura: clave = parte + código (b1…b4, a1…a3, l1…l7, w1…w3)
+const STAND = '<circle cx="12" cy="3.5" r="2"/><path d="M12 6v7"/><path d="M12 13 9.5 21.5"/><path d="M12 13l2.5 8.5"/>';
+const ARMS_DOWN = '<path d="M12 7.5 8.5 12"/><path d="M12 7.5l3.5 4.5"/>';
+const GROUND = '<path d="M5 22.5h14"/>';
+const BENT = '<circle cx="18.3" cy="6.3" r="2"/><path d="M9 13l7-5"/><path d="M16 8l.5 6"/><path d="M9 13l-1 8.5"/><path d="M9 13l2 8.5"/>';
+const PICTS = {
+  b1: STAND + ARMS_DOWN,
+  b2: BENT,
+  b3: STAND + '<path d="M12 7.5 9.5 10.5"/><path d="M12 7.5l2.5 3"/><path d="M6 11.5c1.6 1.8 10.4 1.8 12 0"/><path d="m15.6 11.4 2.4.1-.7 2.2"/>',
+  b4: BENT + '<path d="M4.5 13.5c1.6 1.7 7.4 1.7 9 0"/><path d="m11.4 13.4 2.1.1-.6 2"/>',
+  a1: STAND + ARMS_DOWN,
+  a2: STAND + '<path d="M12 7.5 8.5 12"/><path d="M12 7.5 16.5 2"/>',
+  a3: STAND + '<path d="M12 7.5 7.5 2"/><path d="M12 7.5 16.5 2"/>',
+  l1: '<circle cx="9" cy="3.5" r="2"/><path d="M9 6v7.5"/><path d="M9 8l4 3"/><path d="M9 13.5h6.5"/><path d="M15.5 13.5v8"/><path d="M5 14.5h6"/><path d="M5 8v14"/><path d="M11 14.5V22"/>',
+  l2: STAND + ARMS_DOWN + GROUND,
+  l3: '<circle cx="12" cy="3.5" r="2"/><path d="M12 6v7"/>' + ARMS_DOWN + '<path d="M12 13v8.5"/><path d="M12 13l3.5 2.5-.5 3.5"/>' + GROUND,
+  l4: '<circle cx="11" cy="6" r="2"/><path d="M11 8.5l-.5 6"/><path d="M10.8 10.5l4 2"/><path d="M10.5 14.5l5 2.5-3 4.5"/><path d="M10.5 14.5l3.5 3.5-2.5 3.5"/>' + GROUND,
+  l5: '<circle cx="12" cy="4" r="2"/><path d="M12 6.5v7"/><path d="M12 8 8.5 12"/><path d="M12 8l3.5 4"/><path d="M12 13.5l-1.5 8"/><path d="M12 13.5l4 3-1 5"/>' + GROUND,
+  l6: '<circle cx="12" cy="4" r="2"/><path d="M12 6.5v7"/><path d="M12 8 8.5 12"/><path d="M12 8l3.5 4"/><path d="M12 13.5l3.5 3.5v4.5"/><path d="M12 13.5l-1.5 8H6"/>' + GROUND,
+  l7: '<circle cx="13" cy="3.5" r="2"/><path d="M12.6 6 12 13"/><path d="M12.4 7.8 9 11.5"/><path d="M12.4 7.8l3.4 3.5"/><path d="M12 13l-4 8.5"/><path d="M12 13l4.5 8.5"/><path d="M3 8.5h3"/><path d="M2.5 11.5h3"/>' + GROUND,
+  w1: '<circle cx="12" cy="18.5" r="3"/><path d="M10.5 15.8a1.5 1.7 0 0 1 3 0"/>' + GROUND,
+  w2: '<circle cx="12" cy="17" r="4.5"/><path d="M10 12.8a2 2.2 0 0 1 4 0"/>' + GROUND,
+  w3: '<circle cx="12" cy="15" r="6.5"/><path d="M9.5 8.9a2.5 2.6 0 0 1 5 0"/>' + GROUND
+};
+document.body.insertAdjacentHTML('afterbegin', '<svg width="0" height="0" style="position:absolute" aria-hidden="true">' +
+  Object.entries({...ICONS, ...PICTS}).map(([k,v]) => `<symbol id="i-${k}" viewBox="0 0 24 24">${v}</symbol>`).join('') + '</svg>');
+const ico = (n, cls = 'ico') => `<svg class="${cls}" aria-hidden="true"><use href="#i-${n}"/></svg>`;
+const pict = (part, code) => PICTS[part + code] ? ico(part + code, 'pict') : '';
+
+const catOf = o => TABLE[(o.b-1)*3 + o.a-1][(o.l-1)*3 + o.w-1];
+function bodyCat(part, idx, pct){
+  const t = BODY[part][idx]; let cum = 0;
+  for (let i = 0; i < 4; i++){ cum += t[i]; if (t[i] > 0 && pct <= cum + 1e-9) return i+1; }
+  return 4;
+}
+const codeStr = o => `${o.b}${o.a}${o.l}${o.w}`;
+const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const pctFmt = v => (Math.round(v*10)/10).toLocaleString('es', {maximumFractionDigits:1}) + ' %';
+const catBadge = (k, label=true) => `<span class="cat"><i class="k${k}">${k}</i>${label ? esc(CATS[k-1].t) : ''}</span>`;
+const $ = s => document.querySelector(s);
+const $$ = s => [...document.querySelectorAll(s)];
+
+// ---- Estado ----
+function pad(n){ return String(n).padStart(2,'0'); }
+function blank(){
+  const d = new Date();
+  return {bg:['','','','',`${pad(d.getDate())}/${pad(d.getMonth()+1)}/${d.getFullYear()}`,`${pad(d.getHours())}:${pad(d.getMinutes())}`],
+          phases:[''], interval:30, obs:[]};
+}
+let S = blank(), fileName = '', fileHandle = null, dirty = false, phaseFilter = -1;
+const phaseName = i => (S.phases[i] && S.phases[i].trim()) || `Fase ${i+1}`;
+
+function changed(){ dirty = true; persist(); renderHeader(); }
+// Autoguardado en IndexedDB (las imágenes no caben en localStorage)
+const idb = (() => {
+  let p;
+  const open = () => p || (p = new Promise((res, rej) => {
+    const r = indexedDB.open('winowas', 1);
+    r.onupgradeneeded = () => r.result.createObjectStore('kv');
+    r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error);
+  }));
+  const run = (mode, fn) => open().then(d => new Promise((res, rej) => {
+    const t = d.transaction('kv', mode), q = fn(t.objectStore('kv'));
+    t.oncomplete = () => res(q && q.result); t.onerror = () => rej(t.error);
+  }));
+  return { get: k => run('readonly', s => s.get(k)), set: (k, v) => run('readwrite', s => s.put(v, k)) };
+})();
+let persistTimer = null;
+function persist(){
+  clearTimeout(persistTimer);
+  persistTimer = setTimeout(() => {
+    const snap = {S, fileName, dirty};
+    idb.set('autosave', snap).catch(() => {
+      try{ localStorage.setItem('winowas.autosave', JSON.stringify({...snap, S:{...S, obs:S.obs.map(({img, ...o}) => o)}})); }catch(e){}
+    });
+  }, 300);
+}
+
+// ---- Formato .OWS ----
+// !OWAS! / 6 textos entre comillas / nº de fases / nombres de fases / intervalo / nº de observaciones / códigos (espalda, brazos, piernas, carga, índice de fase desde 0)
+function parseOWS(text){
+  const L = text.split(/\r?\n/); let i = 0;
+  if ((L[i++]||'').trim() !== '!OWAS!') throw new Error('not owas');
+  const unq = s => { s = (s||'').trim(); return s.startsWith('"') && s.endsWith('"') && s.length >= 2 ? s.slice(1,-1) : s; };
+  const bg = []; for (let k = 0; k < 6; k++) bg.push(unq(L[i++]));
+  const np = parseInt(L[i++]) || 0;
+  const phases = []; for (let k = 0; k < np; k++) phases.push(unq(L[i++]));
+  if (!phases.length) phases.push('');
+  const interval = parseInt(L[i++]) || 30;
+  const n = parseInt(L[i++]) || 0;
+  const obs = [];
+  for (let k = 0; k < n; k++){
+    const s = (L[i++]||'').trim();
+    if (!/^\d{4,}$/.test(s)) continue;
+    const o = {b:+s[0], a:+s[1], l:+s[2], w:+s[3], p:parseInt(s.slice(4) || '0')};
+    if (o.b<1||o.b>4||o.a<1||o.a>3||o.l<1||o.l>7||o.w<1||o.w>3) continue;
+    if (o.p >= phases.length) while (phases.length <= o.p) phases.push('');
+    obs.push(o);
+  }
+  return {bg, phases, interval, obs};
+}
+function serializeOWS(st){
+  const q = s => '"' + String(s).replace(/"/g, "'") + '"';
+  const L = ['!OWAS!', ...st.bg.map(q), ` ${st.phases.length} `, ...st.phases.map(q), String(st.interval), String(st.obs.length), ...st.obs.map(o => codeStr(o) + o.p)];
+  return L.join('\r\n') + '\r\n';
+}
+// Los archivos originales usan la codificación de Windows (cp1252)
+const DEC = new TextDecoder('windows-1252');
+const ENC_MAP = (() => { const m = new Map(); for (let b = 0; b < 256; b++) m.set(DEC.decode(new Uint8Array([b])), b); return m; })();
+function encode1252(str){ const out = new Uint8Array(str.length); for (let i = 0; i < str.length; i++){ const b = ENC_MAP.get(str[i]); out[i] = b === undefined ? 63 : b; } return out; }
+
+// ---- Archivos ----
+function confirmDiscard(){ return !dirty || confirm('¿Desea descartar los cambios sin guardar?'); }
+function loadState(st, name, handle){
+  S = st; fileName = name; fileHandle = handle || null; dirty = false; phaseFilter = -1;
+  $('#restored').hidden = true;
+  persist(); renderAll();
+}
+// Proyecto .owsp: JSON (UTF-8) con el estudio completo, incluidas las imágenes de cada observación
+const isProject = name => /\.owsp$/i.test(name || '');
+function parseProject(text){
+  const j = JSON.parse(text);
+  if (j.format !== 'winowas-proyecto' || !j.S || !Array.isArray(j.S.obs)) throw new Error('not project');
+  const st = blank(); Object.assign(st, j.S);
+  if (!st.phases.length) st.phases.push('');
+  return st;
+}
+async function readStudy(file){
+  const buf = await file.arrayBuffer(), head = new Uint8Array(buf.slice(0, 1))[0];
+  return head === 0x7B ? parseProject(new TextDecoder('utf-8').decode(buf)) : parseOWS(DEC.decode(buf));
+}
+const FILE_TYPES = {
+  ows: {description:'Archivo OWAS (sin imágenes)', accept:{'application/octet-stream':['.ows']}},
+  owsp: {description:'Proyecto WinOWAS con imágenes', accept:{'application/json':['.owsp']}}
+};
+async function pickFile(inputEl){
+  if (window.showOpenFilePicker){
+    try{
+      const [h] = await showOpenFilePicker({types:[{description:'Estudios OWAS', accept:{'application/octet-stream':['.ows', '.owsp']}}]});
+      return {file: await h.getFile(), handle: h};
+    }catch(e){ if (e.name === 'AbortError') return null; }
+  }
+  return new Promise(res => { inputEl.value = ''; inputEl.onchange = () => res(inputEl.files[0] ? {file: inputEl.files[0], handle: null} : null); inputEl.click(); });
+}
+async function openFile(){
+  if (!confirmDiscard()) return;
+  const r = await pickFile($('#fileOpen')); if (!r) return;
+  try{ loadState(await readStudy(r.file), r.file.name, r.handle); }
+  catch(e){ alert(`"${r.file.name}" no es un archivo OWAS.`); }
+}
+async function joinFile(){
+  const r = await pickFile($('#fileJoin')); if (!r) return;
+  let o; try{ o = await readStudy(r.file); } catch(e){ alert(`"${r.file.name}" no es un archivo OWAS.`); return; }
+  if (o.phases.length > S.phases.length){
+    if (!confirm('El archivo a unir tiene más fases de trabajo. ¿Continuar?')) return;
+    for (let i = S.phases.length; i < o.phases.length; i++) S.phases.push(o.phases[i]);
+  }
+  S.obs.push(...o.obs); changed(); renderAll();
+  alert(`Se añadieron ${o.obs.length} observaciones de "${r.file.name}".`);
+}
+const studyBytes = name => isProject(name)
+  ? new TextEncoder().encode(JSON.stringify({format:'winowas-proyecto', version:2, S}))
+  : encode1252(serializeOWS(S));
+async function saveFile(as){
+  const hasImg = S.obs.some(o => o.img);
+  // Un .OWS no guarda imágenes: ofrecer el formato de proyecto para no perderlas
+  if (!as && fileName && !isProject(fileName) && hasImg &&
+      confirm('Este estudio tiene imágenes y el formato .OWS no las guarda.\n\nAceptar: guardar como proyecto .owsp con las imágenes.\nCancelar: guardar solo los datos en ' + fileName + '.')) as = true;
+  const base = (fileName || 'OWAS').replace(/\.(ows|owsp)$/i, '');
+  const name = as || !fileName ? base + (hasImg ? '.owsp' : '.OWS') : fileName;
+  try{
+    if (!as && fileHandle){
+      const w = await fileHandle.createWritable(); await w.write(studyBytes(fileName)); await w.close();
+    } else if (window.showSaveFilePicker){
+      const h = await showSaveFilePicker({suggestedName:name, types: hasImg ? [FILE_TYPES.owsp, FILE_TYPES.ows] : [FILE_TYPES.ows, FILE_TYPES.owsp]});
+      const w = await h.createWritable(); await w.write(studyBytes(h.name)); await w.close();
+      fileHandle = h; fileName = h.name;
+    } else throw new Error('no fs api');
+  }catch(e){
+    if (e.name === 'AbortError') return;
+    let n = name;
+    if (as || !fileName){ n = prompt('Nombre del archivo (.owsp guarda las imágenes, .OWS solo los datos):', name); if (!n) return; if (!/\.(ows|owsp)$/i.test(n)) n += hasImg ? '.owsp' : '.OWS'; }
+    const bytes = studyBytes(n);
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob([bytes], {type:'application/octet-stream'}));
+    a.download = n; document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+    fileName = n;
+  }
+  dirty = false; persist(); renderHeader();
+}
+function newFile(){ if (!confirmDiscard()) return; loadState(blank(), '', null); showTab('datos'); }
+
+// ---- Interfaz: cabecera y pestañas ----
+function renderHeader(){
+  $('#fname').textContent = fileName ? '— ' + fileName : '— (sin nombre)';
+  $('#dirty').textContent = dirty ? '●' : '';
+  $('#dirty').title = dirty ? 'Cambios sin guardar' : '';
+}
+function showTab(t){
+  $$('#tabs button').forEach(b => b.classList.toggle('on', b.dataset.tab === t));
+  $$('section.tab').forEach(s => s.classList.toggle('on', s.id === 'tab-' + t));
+  if (t === 'resultados') renderResults();
+  if (t === 'partes') renderBodyParts();
+  if (t === 'lista') renderList();
+  if (t === 'observar') renderObserve();
+}
+
+// ---- Datos generales y fases ----
+function renderData(){
+  $('#bgFields').innerHTML = BG_LABELS.map((l,i) =>
+    `<label class="field"><span>${l}</span><input type="text" data-bg="${i}" value="${esc(S.bg[i]||'')}"${i===4?' placeholder="dd/mm/aaaa"':i===5?' placeholder="hh:mm"':''}></label>`).join('');
+  $('#interval').value = S.interval;
+  renderPhases();
+}
+function renderPhases(){
+  const used = S.phases.map((_,i) => S.obs.filter(o => o.p === i).length);
+  $('#phases').innerHTML = S.phases.map((p,i) =>
+    `<div class="phase-row"><span class="num">${i+1}</span><input type="text" data-phase="${i}" value="${esc(p)}" placeholder="Fase ${i+1}">
+     <span class="small muted" style="min-width:60px">${used[i]} obs.</span>
+     <button class="btn danger icon-only" data-delphase="${i}" ${S.phases.length < 2 || used[i] ? 'disabled' : ''} title="Eliminar fase" aria-label="Eliminar fase ${i+1}">${ico('trash')}</button></div>`).join('');
+}
+document.addEventListener('input', e => {
+  const t = e.target;
+  if (t.dataset.bg !== undefined){ S.bg[+t.dataset.bg] = t.value; changed(); }
+  else if (t.dataset.phase !== undefined){ S.phases[+t.dataset.phase] = t.value; changed(); }
+  else if (t.id === 'interval'){ const v = parseInt(t.value); if (v > 0){ S.interval = v; changed(); } }
+});
+$('#addPhase').onclick = () => { S.phases.push(''); changed(); renderPhases(); fillPhaseFilters(); };
+$('#phases').addEventListener('click', e => {
+  const b = e.target.closest('[data-delphase]'); if (!b) return;
+  const k = +b.dataset.delphase;
+  S.phases.splice(k, 1); S.obs.forEach(o => { if (o.p > k) o.p--; });
+  changed(); renderPhases(); fillPhaseFilters();
+});
+
+// ---- Observación ----
+let sel = {b:0,a:0,l:0,w:0,p:0};
+const needPhase = () => S.phases.length > 1;
+function nextField(){ for (const p of PARTS) if (!sel[p.key]) return p.key; return null; }
+function renderObserve(){
+  if (sel.p >= S.phases.length) sel.p = 0;
+  let html = PARTS.map(p => `<div class="card part"><h3><span>${p.name}</span><span class="muted">${sel[p.key] || '–'}</span></h3>` +
+    p.opts.map((o,i) => `<button class="opt${sel[p.key]===i+1?' sel':''}" data-k="${p.key}" data-v="${i+1}" aria-pressed="${sel[p.key]===i+1}"><b>${i+1}</b>${pict(p.key, i+1)}<span>${o}</span></button>`).join('') + '</div>').join('');
+  html += `<div class="card part"><h3><span>Fase de trabajo</span><span class="muted">${sel.p+1}</span></h3>` +
+    S.phases.map((p,i) => `<button class="opt${sel.p===i?' sel':''}" data-k="p" data-v="${i}" aria-pressed="${sel.p===i}"><b>${i+1}</b><span>${esc(phaseName(i))}</span></button>`).join('') + '</div>';
+  $('#parts').innerHTML = html;
+  const nf = nextField();
+  $('#digits').innerHTML = PARTS.map(p => `<span class="${nf===p.key?'next':''}" title="${p.name}">${sel[p.key]||''}</span>`).join('');
+  $('#liveCat').innerHTML = nf ? '<span class="muted small">Seleccione la postura</span>' : catBadge(catOf(sel));
+  $('#accept').disabled = !!nf;
+  $('#repeat').disabled = !S.obs.length;
+  $('#takeback').disabled = !S.obs.length;
+  $('#obsCount').textContent = `${S.obs.length} observaciones`;
+  $('#recent').innerHTML = S.obs.slice(-12).reverse().map(o => `<span title="${esc(phaseName(o.p))}">${o.img ? `<img src="${o.img}" alt="">` : ''}${codeStr(o)} · cat. ${catOf(o)}</span>`).join('');
+  renderMarks(); renderThumbs();
+}
+$('#parts').addEventListener('click', e => {
+  const b = e.target.closest('.opt'); if (!b) return;
+  sel[b.dataset.k] = +b.dataset.v; renderObserve();
+});
+// Añade una observación; en modo video o fotografías guarda también la imagen y su origen
+function addObs(code){
+  const {b, a, l, w, p} = code;
+  S.obs.push({b, a, l, w, p, ...captureMedia()});
+  changed();
+  if (mode === 'video' && $('#vAuto').checked) gotoSample(1);
+  if (mode === 'photo' && $('#pAuto').checked) nextPendingPhoto();
+}
+function accept(){
+  if (nextField()) return;
+  addObs(sel); sel = {b:0, a:0, l:0, w: mode !== 'live' && $('#autoDetect').checked ? sel.w : 0, p:sel.p};
+  renderObserve();
+}
+function repeatLast(){ if (!S.obs.length) return; addObs(S.obs[S.obs.length-1]); renderObserve(); }
+function takeBack(){ if (!S.obs.length) return; S.obs.pop(); changed(); renderObserve(); }
+function clearSel(){ sel = {b:0,a:0,l:0,w:0,p:sel.p}; renderObserve(); }
+$('#accept').onclick = accept; $('#repeat').onclick = repeatLast; $('#takeback').onclick = takeBack; $('#clearSel').onclick = clearSel;
+let phaseDigitPending = false;
+document.addEventListener('keydown', e => {
+  if (!$('#tab-observar').classList.contains('on')) return;
+  if (e.target.matches('input,select,textarea') || e.ctrlKey || e.metaKey || e.altKey) return;
+  const k = e.key;
+  if (mode === 'video' && vid.src){
+    const step = e.shiftKey ? 1 : 1/fps();
+    if (k === 'ArrowLeft'){ seekBy(-step); e.preventDefault(); return; }
+    if (k === 'ArrowRight'){ seekBy(step); e.preventDefault(); return; }
+    if (k === ' '){ togglePlay(); e.preventDefault(); return; }
+    if (k === 'n' || k === 'N'){ gotoSample(1); return; }
+    if (k === 'b' || k === 'B'){ gotoSample(-1); return; }
+  }
+  if (mode !== 'live' && (k === 'd' || k === 'D')){ detectPose(); return; }
+  if (mode === 'photo' && photos.length){
+    if (k === 'ArrowLeft'){ showPhoto(pi - 1); e.preventDefault(); return; }
+    if (k === 'ArrowRight'){ showPhoto(pi + 1); e.preventDefault(); return; }
+  }
+  if (/^[1-9]$/.test(k)){
+    const nf = nextField();
+    if (nf){
+      const max = PARTS.find(p => p.key === nf).opts.length;
+      if (+k <= max){ sel[nf] = +k; phaseDigitPending = needPhase() && !nextField(); renderObserve(); }
+    } else if (needPhase() && +k <= S.phases.length){ sel.p = +k - 1; phaseDigitPending = false; renderObserve(); }
+    e.preventDefault();
+  } else if (k === 'Enter'){ accept(); e.preventDefault(); }
+  else if (k === 'Backspace'){ for (const p of [...PARTS].reverse()) if (sel[p.key]){ sel[p.key] = 0; break; } renderObserve(); e.preventDefault(); }
+  else if (k === 'Escape') clearSel();
+  else if (k === 'Delete') takeBack();
+  else if (k === 'r' || k === 'R') repeatLast();
+});
+
+// Reloj de observación: avisa con un pitido cada intervalo
+let timer = null, nextAt = 0, audioCtx = null;
+function beep(){
+  try{
+    audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
+    const o = audioCtx.createOscillator(), g = audioCtx.createGain();
+    o.frequency.value = 880; g.gain.value = 0.15; o.connect(g); g.connect(audioCtx.destination);
+    o.start(); o.stop(audioCtx.currentTime + 0.25);
+  }catch(e){}
+}
+function tick(){
+  const left = Math.max(0, Math.ceil((nextAt - Date.now())/1000));
+  $('#clock').textContent = `${left} s`;
+  if (Date.now() >= nextAt){
+    beep(); nextAt += S.interval*1000;
+    const c = $('#clock'); c.classList.remove('alert'); void c.offsetWidth; c.classList.add('alert');
+  }
+}
+$('#clockBtn').onclick = () => {
+  if (timer){ clearInterval(timer); timer = null; $('#clockBtn').innerHTML = ico('play') + 'Iniciar reloj'; $('#clock').textContent = '--'; $('#clockInfo').textContent = ''; return; }
+  beep(); nextAt = Date.now() + S.interval*1000; timer = setInterval(tick, 200); tick();
+  $('#clockBtn').innerHTML = ico('stop') + 'Detener reloj';
+  $('#clockInfo').textContent = `Aviso cada ${S.interval} s`;
+};
+function stopClock(){ if (timer) $('#clockBtn').click(); }
+
+// ---- Modos: en vivo, video y fotografías ----
+let mode = 'live';
+function setMode(m){
+  mode = m;
+  $$('#modeSeg button').forEach(b => { const on = b.dataset.mode === m; b.classList.toggle('on', on); b.setAttribute('aria-pressed', on); });
+  $('#mediaCard').hidden = m === 'live';
+  $('#videoPane').hidden = m !== 'video';
+  $('#photoPane').hidden = m !== 'photo';
+  $('#liveBox').hidden = m !== 'live';
+  if (m !== 'live') stopClock();
+  if (m !== 'video') vid.pause();
+  clearOverlay(); setDetectStatus('');
+  renderObserve();
+}
+$('#modeSeg').addEventListener('click', e => { const b = e.target.closest('[data-mode]'); if (b) setMode(b.dataset.mode); });
+
+// Captura del fotograma o la fotografía actual, reducida para que el proyecto no pese demasiado
+function grabFrame(src, N){
+  const w0 = src.videoWidth || src.naturalWidth, h0 = src.videoHeight || src.naturalHeight;
+  if (!w0 || !h0) return null;
+  const k = Math.min(1, 800 / Math.max(w0, h0)), c = document.createElement('canvas');
+  c.width = Math.round(w0 * k); c.height = Math.round(h0 * k);
+  c.getContext('2d').drawImage(src, 0, 0, c.width, c.height);
+  if (N) drawSkeleton(c.getContext('2d'), N, c.width, c.height, c.width / 640);
+  try{ return c.toDataURL('image/jpeg', 0.8); }catch(e){ return null; }
+}
+function captureMedia(){
+  const det = lastDet && lastDet.key === mediaKey() ? lastDet : null;
+  const extra = det ? {det: det.code} : {}, N = det && $('#bakeSkel').checked ? det.N : null;
+  if (mode === 'video' && vid.src && vid.readyState >= 2){
+    const img = grabFrame(vid, N);
+    return img ? {img, t: Math.round(vid.currentTime * 1000) / 1000, src: videoName, ...extra} : {};
+  }
+  if (mode === 'photo' && photos[pi]){
+    const img = grabFrame($('#photo'), N);
+    return img ? {img, src: photos[pi].name, ...extra} : {};
+  }
+  return {};
+}
+
+// Video
+const vid = $('#vid');
+let videoName = '';
+const fps = () => Math.max(1, parseFloat($('#vFps').value) || 30);
+const fmtTime = t => { t = Math.max(0, t || 0); const m = Math.floor(t / 60), s = t - m * 60; return `${pad(m)}:${s.toFixed(2).padStart(5, '0')}`; };
+function setVideoTime(t){ vid.pause(); vid.currentTime = Math.min(Math.max(0, t), vid.duration || 0); }
+function seekBy(dt){ if (vid.src) setVideoTime(vid.currentTime + dt); }
+// Salta a la siguiente o anterior muestra según el intervalo de observación
+function gotoSample(dir){
+  if (!vid.src) return;
+  const iv = S.interval || 30, n = Math.round(vid.currentTime / iv * 1000) / 1000;
+  const k = dir > 0 ? Math.floor(n) + 1 : Math.ceil(n) - 1;
+  if (k * iv > (vid.duration || 0) + 1e-3){ alert('No hay más muestras en este video.'); return; }
+  autoPending = true;
+  setVideoTime(k * iv);
+}
+function togglePlay(){ if (!vid.src) return; vid.paused ? vid.play() : vid.pause(); }
+function renderVideoUI(){
+  const d = vid.duration || 0;
+  $('#vTime').textContent = `${fmtTime(vid.currentTime)} / ${fmtTime(d)}`;
+  $('#seek').max = d; $('#seek').value = vid.currentTime;
+  const playing = !vid.paused;
+  $('#vPlay').innerHTML = ico(playing ? 'pause' : 'play');
+  $('#vPlay').setAttribute('aria-label', playing ? 'Pausar' : 'Reproducir');
+}
+function renderMarks(){
+  const d = vid.duration;
+  $('#marks').innerHTML = !d ? '' : S.obs.map((o, i) => o.src === videoName && o.t != null
+    ? `<button class="k${catOf(o)}" style="left:${o.t / d * 100}%" data-t="${o.t}" title="Obs. ${i+1}: ${codeStr(o)} · ${fmtTime(o.t)}" aria-label="Ir a la observación ${i+1}"></button>` : '').join('');
+}
+$('#marks').addEventListener('click', e => { const b = e.target.closest('[data-t]'); if (b) setVideoTime(+b.dataset.t); });
+$('#loadVideo').onclick = () => { const f = $('#fileVideo'); f.value = ''; f.click(); };
+$('#fileVideo').onchange = e => {
+  const f = e.target.files[0]; if (!f) return;
+  if (vid.src) URL.revokeObjectURL(vid.src);
+  videoName = f.name; vid.src = URL.createObjectURL(f);
+  $('#videoName').textContent = f.name; $('#vidEmpty').hidden = true;
+};
+vid.addEventListener('loadedmetadata', () => { renderVideoUI(); renderMarks(); });
+['timeupdate', 'seeked', 'play', 'pause'].forEach(ev => vid.addEventListener(ev, renderVideoUI));
+vid.addEventListener('error', () => {
+  alert('El navegador no puede reproducir este video. Use un archivo MP4 (H.264) o WebM.');
+  vid.removeAttribute('src'); videoName = ''; $('#videoName').textContent = 'Ningún video cargado'; $('#vidEmpty').hidden = false;
+});
+vid.addEventListener('click', togglePlay);
+$('#seek').addEventListener('input', e => setVideoTime(+e.target.value));
+$('#vPlay').onclick = togglePlay;
+$('#vBackF').onclick = () => seekBy(-1/fps()); $('#vFwdF').onclick = () => seekBy(1/fps());
+$('#vBack1').onclick = () => seekBy(-1); $('#vFwd1').onclick = () => seekBy(1);
+$('#vPrevS').onclick = () => gotoSample(-1); $('#vNextS').onclick = () => gotoSample(1);
+$('#vRate').onchange = e => { vid.playbackRate = +e.target.value; };
+
+// Fotografías
+let photos = [], pi = 0;
+const photoDone = name => S.obs.some(o => o.src === name);
+function showPhoto(i){
+  if (!photos.length) return;
+  pi = Math.min(Math.max(0, i), photos.length - 1);
+  $('#photo').src = photos[pi].url; $('#photo').alt = photos[pi].name;
+  $('#photoInfo').textContent = `${pi + 1} de ${photos.length} · ${photos[pi].name}`;
+  renderThumbs();
+}
+function nextPendingPhoto(){
+  for (let j = 1; j <= photos.length; j++){ const k = (pi + j) % photos.length; if (!photoDone(photos[k].name)){ showPhoto(k); return; } }
+  showPhoto(pi + 1);
+}
+function renderThumbs(){
+  $('#thumbs').innerHTML = photos.map((ph, i) => `<button class="${i === pi ? 'on' : ''}" data-pi="${i}" title="${esc(ph.name)}" aria-label="Fotografía ${i+1}${photoDone(ph.name) ? ', registrada' : ''}"><img src="${ph.url}" alt="">${photoDone(ph.name) ? `<span class="done">${ico('check')}</span>` : ''}</button>`).join('');
+  const on = $('#thumbs .on'); if (on) on.scrollIntoView({block:'nearest', inline:'nearest'});
+}
+$('#thumbs').addEventListener('click', e => { const b = e.target.closest('[data-pi]'); if (b) showPhoto(+b.dataset.pi); });
+$('#loadPhotos').onclick = () => { const f = $('#filePhotos'); f.value = ''; f.click(); };
+$('#filePhotos').onchange = e => {
+  const files = [...e.target.files].sort((a, b) => a.name.localeCompare(b.name, 'es', {numeric:true}));
+  if (!files.length) return;
+  photos.forEach(ph => URL.revokeObjectURL(ph.url));
+  photos = files.map(f => ({name: f.name, url: URL.createObjectURL(f)}));
+  $('#photoEmpty').hidden = true; showPhoto(0);
+};
+$('#pPrev').onclick = () => showPhoto(pi - 1); $('#pNext').onclick = () => showPhoto(pi + 1);
+
+// Visor de la imagen de una observación
+let viewIdx = -1;
+function openViewer(i){
+  const o = S.obs[i]; if (!o || !o.img) return;
+  viewIdx = i;
+  $('#viewImg').src = o.img; $('#viewImg').alt = `Observación ${i+1}`;
+  $('#viewInfo').innerHTML = `<p style="margin:0 0 6px;display:flex;gap:8px;align-items:center;flex-wrap:wrap"><b>Observación ${i+1} · ${codeStr(o)}</b>${catBadge(catOf(o))}</p>
+    <p class="small muted" style="margin:0">${esc(describe(codeStr(o)))}<br>${esc(phaseName(o.p))}${o.src ? ' · ' + esc(o.src) : ''}${o.t != null ? ' · ' + fmtTime(o.t) : ''}</p>${o.det ? `<p class="small" style="margin:6px 0 0">Propuesta automática: <b>${o.det.split('').join(' ')}</b>${detTag(o)}</p>` : ''}`;
+  $('#viewJump').hidden = !(o.t != null && o.src === videoName && vid.src);
+  $('#viewer').showModal();
+}
+$('#viewClose').onclick = () => $('#viewer').close();
+$('#viewer').addEventListener('click', e => { if (e.target === $('#viewer')) $('#viewer').close(); });
+$('#viewJump').onclick = () => { const o = S.obs[viewIdx]; $('#viewer').close(); showTab('observar'); setMode('video'); setVideoTime(o.t); };
+document.addEventListener('click', e => { const b = e.target.closest('[data-view]'); if (b) openViewer(+b.dataset.view); });
+
+// ---- Detección automática de postura con MediaPipe Pose ----
+// MediaPipe (Apache 2.0, © Google LLC) va incrustado en base64 al final del archivo; build.py lo inserta.
+const POSE = {lm: null, loading: null};
+const pageParsed = new Promise(res => document.readyState === 'loading' ? document.addEventListener('DOMContentLoaded', res) : res());
+async function embedded(id, file){
+  await pageParsed;
+  const txt = document.getElementById(id).textContent.trim();
+  // Sin compilar (src/WinOWAS.html servido por HTTP): se leen los archivos de vendor/
+  if (txt.startsWith('@@')) return new Uint8Array(await (await fetch('../vendor/mediapipe/' + file)).arrayBuffer());
+  const bin = atob(txt), out = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) out[i] = bin.charCodeAt(i);
+  return out;
+}
+function loadPose(){
+  return POSE.loading || (POSE.loading = (async () => {
+    const [bundle, loader, wasm, model] = await Promise.all([
+      embedded('mp-bundle', 'vision_bundle.mjs'), embedded('mp-loader', 'vision_wasm_internal.js'),
+      embedded('mp-wasm', 'vision_wasm_internal.wasm'), embedded('mp-model', 'pose_landmarker_full.task')]);
+    const blobUrl = (bytes, type) => URL.createObjectURL(new Blob([bytes], {type}));
+    const vision = await import(blobUrl(bundle, 'text/javascript'));
+    const fileset = {wasmLoaderPath: blobUrl(loader, 'text/javascript'), wasmBinaryPath: blobUrl(wasm, 'application/wasm')};
+    POSE.lm = await vision.PoseLandmarker.createFromOptions(fileset, {
+      baseOptions: {modelAssetBuffer: model, delegate: 'CPU'}, runningMode: 'IMAGE', numPoses: 1,
+      minPoseDetectionConfidence: 0.5, minPosePresenceConfidence: 0.5});
+    return POSE.lm;
+  })().catch(e => { POSE.loading = null; throw e; }));
+}
+
+// Umbrales ajustables (se recuerdan en este navegador)
+const CFG_DEFAULT = {trunk: 20, twist: 20, knee: 150, lift: 10, walk: true, walkDist: 25};
+let CFG = {...CFG_DEFAULT};
+try{ Object.assign(CFG, JSON.parse(localStorage.getItem('winowas.detect') || '{}')); }catch(e){}
+$$('[data-cfg]').forEach(el => { const k = el.dataset.cfg; if (el.type === 'checkbox') el.checked = !!CFG[k]; else el.value = CFG[k]; });
+document.addEventListener('change', e => {
+  const k = e.target.dataset && e.target.dataset.cfg; if (!k) return;
+  CFG[k] = e.target.type === 'checkbox' ? e.target.checked : (parseFloat(e.target.value) || CFG_DEFAULT[k]);
+  try{ localStorage.setItem('winowas.detect', JSON.stringify(CFG)); }catch(err){}
+});
+
+// Geometría 3D sobre los puntos «world» de MediaPipe (metros, origen entre las caderas)
+const V = {
+  sub: (p, q) => [p.x - q.x, p.y - q.y, p.z - q.z],
+  mid: (p, q) => ({x: (p.x + q.x) / 2, y: (p.y + q.y) / 2, z: (p.z + q.z) / 2}),
+  dot: (u, v) => u[0]*v[0] + u[1]*v[1] + u[2]*v[2],
+  len: u => Math.hypot(u[0], u[1], u[2]),
+  rej: (u, n) => { const k = V.dot(u, n); return [u[0] - k*n[0], u[1] - k*n[1], u[2] - k*n[2]]; },
+  unit: u => { const l = V.len(u) || 1; return [u[0]/l, u[1]/l, u[2]/l]; },
+  ang: (u, v) => Math.acos(Math.max(-1, Math.min(1, V.dot(u, v) / ((V.len(u) * V.len(v)) || 1)))) * 180 / Math.PI
+};
+// Índices de MediaPipe Pose
+const P = {sh:[11,12], el:[13,14], wr:[15,16], hip:[23,24], knee:[25,26], ank:[27,28], heel:[29,30], toe:[31,32]};
+const BONES = [[11,12],[11,13],[13,15],[12,14],[14,16],[11,23],[12,24],[23,24],[23,25],[25,27],[27,29],[29,31],[27,31],[24,26],[26,28],[28,30],[30,32],[28,32]];
+
+// Convierte los puntos del cuerpo en los dígitos OWAS de espalda, brazos y piernas
+function classifyOWAS(W, N){
+  const warn = [], m = {};
+  const vis = i => N[i].visibility ?? 1;
+  // Sentido vertical: en la imagen la «y» crece hacia abajo; se comprueba que los puntos 3D coinciden
+  const s = Math.sign((N[23].y + N[24].y) - (N[11].y + N[12].y)) === Math.sign((W[23].y + W[24].y) - (W[11].y + W[12].y)) ? 1 : -1;
+  const up = [0, -s, 0], h = p => V.dot([p.x, p.y, p.z], up);
+  const S2 = V.mid(W[11], W[12]), H2 = V.mid(W[23], W[24]);
+  const trunk = V.sub(S2, H2), hipLine = V.unit(V.sub(W[24], W[23])), shLine = V.sub(W[12], W[11]);
+  if ([11,12,23,24].some(i => vis(i) < 0.5)) warn.push('tronco poco visible');
+
+  // Espalda: flexión en el plano sagital, inclinación lateral y giro de hombros respecto a caderas
+  m.trunk = V.ang(V.rej(trunk, hipLine), up);
+  m.side = Math.abs(90 - V.ang(trunk, hipLine));
+  m.twist = V.ang(V.rej(shLine, up), V.rej(V.sub(W[24], W[23]), up));
+  const bent = m.trunk >= CFG.trunk, twisted = m.twist >= CFG.twist || m.side >= CFG.twist;
+  const b = bent ? (twisted ? 4 : 2) : (twisted ? 3 : 1);
+
+  // Brazos: cuántos codos o muñecas quedan por encima de su hombro
+  m.armsUp = [0, 1].filter(k => vis(P.sh[k]) >= 0.3 && Math.max(h(W[P.el[k]]), h(W[P.wr[k]])) > h(W[P.sh[k]])).length;
+  const a = 1 + m.armsUp;
+
+  // Piernas
+  let l = 0;
+  const legVis = [...P.knee, ...P.ank].every(i => vis(i) >= 0.4);
+  if (!legVis) warn.push('piernas no visibles: elija las piernas a mano');
+  else {
+    const knee = k => V.ang(V.sub(W[P.hip[k]], W[P.knee[k]]), V.sub(W[P.ank[k]], W[P.knee[k]]));
+    m.kneeL = knee(0); m.kneeR = knee(1);
+    const legLen = [0, 1].map(k => V.len(V.sub(W[P.hip[k]], W[P.knee[k]])) + V.len(V.sub(W[P.knee[k]], W[P.ank[k]]))).reduce((x, y) => x + y) / 2;
+    const foot = k => Math.min(h(W[P.ank[k]]), h(W[P.heel[k]]), h(W[P.toe[k]]));
+    const ground = Math.min(foot(0), foot(1));
+    const thigh = k => V.ang(V.sub(W[P.knee[k]], W[P.hip[k]]), up.map(c => -c));
+    const kneeLow = [0, 1].map(k => h(W[P.knee[k]]) - ground < 0.15 * legLen);
+    const lifted = Math.abs(foot(0) - foot(1)) / legLen * 100;
+    m.lift = lifted;
+    if (kneeLow[0] || kneeLow[1]) l = 6;                                            // arrodillado
+    else if (thigh(0) > 55 && thigh(1) > 55 && Math.min(m.kneeL, m.kneeR) > 60
+             && h(H2) - ground < 0.75 * legLen) l = 1;                               // sentado
+    else if (lifted >= CFG.lift){                                                    // apoyado en una pierna
+      const support = foot(0) < foot(1) ? 0 : 1;
+      l = (support ? m.kneeR : m.kneeL) >= CFG.knee ? 3 : 5;
+    } else l = Math.min(m.kneeL, m.kneeR) < CFG.knee ? 4 : 2;                       // de pie sobre ambas
+  }
+  return {b, a, l, m, warn};
+}
+
+// Dibuja el esqueleto en un contexto 2D de tamaño w×h
+function drawSkeleton(g, N, w, h, scale = 1){
+  g.save();
+  g.lineCap = 'round'; g.lineJoin = 'round';
+  const pt = i => [N[i].x * w, N[i].y * h];
+  for (const [i, j] of BONES){
+    if ((N[i].visibility ?? 1) < 0.3 || (N[j].visibility ?? 1) < 0.3) continue;
+    const [x1, y1] = pt(i), [x2, y2] = pt(j);
+    g.strokeStyle = 'rgba(0,0,0,.55)'; g.lineWidth = 6 * scale; g.beginPath(); g.moveTo(x1, y1); g.lineTo(x2, y2); g.stroke();
+    g.strokeStyle = '#7fd1ff'; g.lineWidth = 3 * scale; g.beginPath(); g.moveTo(x1, y1); g.lineTo(x2, y2); g.stroke();
+  }
+  for (let i = 11; i <= 32; i++){
+    if ((N[i].visibility ?? 1) < 0.3) continue;
+    const [x, y] = pt(i);
+    g.fillStyle = '#ffffff'; g.strokeStyle = 'rgba(0,0,0,.6)'; g.lineWidth = 1.5 * scale;
+    g.beginPath(); g.arc(x, y, 3.5 * scale, 0, Math.PI * 2); g.fill(); g.stroke();
+  }
+  g.restore();
+}
+function mediaEl(){ return mode === 'video' ? vid : $('#photo'); }
+function overlayEl(){ return mode === 'video' ? $('#ovVideo') : $('#ovPhoto'); }
+function clearOverlay(){ for (const c of [$('#ovVideo'), $('#ovPhoto')]) c.getContext('2d').clearRect(0, 0, c.width, c.height); }
+function renderOverlay(N){
+  const el = mediaEl(), c = overlayEl(), stage = el.parentElement;
+  const r = el.getBoundingClientRect(), sr = stage.getBoundingClientRect(), dpr = window.devicePixelRatio || 1;
+  c.style.left = (r.left - sr.left) + 'px'; c.style.top = (r.top - sr.top) + 'px';
+  c.style.width = r.width + 'px'; c.style.height = r.height + 'px';
+  c.width = Math.round(r.width * dpr); c.height = Math.round(r.height * dpr);
+  const g = c.getContext('2d'); g.clearRect(0, 0, c.width, c.height);
+  drawSkeleton(g, N, c.width, c.height, dpr);
+}
+// Clave del fotograma o la foto actual, para saber si la detección sigue vigente
+const mediaKey = () => mode === 'video' ? `${videoName}@${vid.currentTime.toFixed(3)}` : (photos[pi] ? photos[pi].name : '');
+let lastDet = null, detecting = false;
+const seekTo = t => new Promise(res => { vid.addEventListener('seeked', res, {once: true}); vid.currentTime = t; });
+
+async function detectPose(){
+  if (detecting) return;
+  const el = mediaEl();
+  if (mode === 'live' || !(mode === 'video' ? vid.src && vid.readyState >= 2 : photos[pi] && el.complete && el.naturalWidth)){
+    setDetectStatus('Cargue primero un video o una fotografía.'); return;
+  }
+  detecting = true;
+  try{
+    vid.pause();
+    if (!POSE.lm) setDetectStatus('Preparando el detector de posturas (solo la primera vez, unos segundos)…');
+    const lm = await loadPose();
+    setDetectStatus('Detectando…');
+    const key = mediaKey(), res = lm.detect(el);
+    if (!res.landmarks || !res.landmarks.length){
+      lastDet = null; clearOverlay();
+      setDetectStatus('<span class="warn">No se detectó ninguna persona en esta imagen.</span>'); return;
+    }
+    const N = res.landmarks[0], W = res.worldLandmarks[0];
+    const r = classifyOWAS(W, N);
+    // Caminando: compara la posición de la cadera con el fotograma de 0,5 s después
+    if (mode === 'video' && CFG.walk && r.l && r.l !== 1 && r.l !== 6){
+      const t0 = vid.currentTime, t1 = t0 + 0.5 <= vid.duration ? t0 + 0.5 : t0 - 0.5;
+      if (t1 >= 0){
+        await seekTo(t1);
+        const r2 = lm.detect(vid);
+        await seekTo(t0);
+        if (r2.landmarks && r2.landmarks.length){
+          const N2 = r2.landmarks[0], hip = n => [(n[23].x + n[24].x) / 2, (n[23].y + n[24].y) / 2];
+          const torso = Math.hypot((N[11].x + N[12].x) / 2 - hip(N)[0], (N[11].y + N[12].y) / 2 - hip(N)[1]) || 1;
+          r.m.walk = Math.hypot(hip(N2)[0] - hip(N)[0], hip(N2)[1] - hip(N)[1]) / torso * 100;
+          if (r.m.walk >= CFG.walkDist) r.l = 7;
+        }
+      }
+    }
+    lastDet = {key, N, code: `${r.b}${r.a}${r.l || 0}`};
+    sel.b = r.b; sel.a = r.a; if (r.l) sel.l = r.l;
+    renderObserve();
+    renderOverlay(N);
+    const f = v => Math.round(v);
+    const chips = [`Tronco ${f(r.m.trunk)}°`, `Giro ${f(r.m.twist)}°`, `Lateral ${f(r.m.side)}°`, `Brazos arriba ${r.m.armsUp}`];
+    if (r.m.kneeL != null) chips.push(`Rodillas ${f(r.m.kneeL)}° / ${f(r.m.kneeR)}°`);
+    if (r.m.walk != null) chips.push(`Desplazamiento ${f(r.m.walk)} %`);
+    setDetectStatus(`<b>Propuesta: ${r.b} ${r.a} ${r.l || '?'}</b>` + chips.map(c => `<span class="chip">${c}</span>`).join('') +
+      (r.warn.length ? `<span class="warn">Atención: ${r.warn.join('; ')}.</span>` : '') +
+      (sel.w ? '' : '<span class="muted">Elija la carga y acepte.</span>'));
+  }catch(e){
+    console.error(e);
+    setDetectStatus('<span class="warn">No se pudo usar el detector de posturas en este navegador.</span>');
+  }finally{ detecting = false; }
+}
+function setDetectStatus(html){ $('#detectStatus').innerHTML = html; }
+$('#detectBtn').onclick = detectPose;
+// La propuesta deja de valer al cambiar de fotograma o de foto
+vid.addEventListener('seeking', () => { if (!detecting){ clearOverlay(); if (lastDet) setDetectStatus(''); } });
+vid.addEventListener('play', () => { clearOverlay(); setDetectStatus(''); });
+let autoPending = false;
+vid.addEventListener('seeked', () => { if (autoPending && !detecting){ autoPending = false; if ($('#autoDetect').checked) detectPose(); } });
+$('#photo').addEventListener('load', () => { clearOverlay(); setDetectStatus(''); if ($('#autoDetect').checked && mode === 'photo') detectPose(); });
+window.addEventListener('resize', () => { if (lastDet && lastDet.key === mediaKey()) renderOverlay(lastDet.N); });
+
+// ---- Resultados ----
+function fillPhaseFilters(){
+  if (phaseFilter >= S.phases.length) phaseFilter = -1;
+  const opts = `<option value="-1">Todo el material</option>` + S.phases.map((p,i) => `<option value="${i}">${esc(phaseName(i))}</option>`).join('');
+  $$('.phaseFilter').forEach(s => { s.innerHTML = opts; s.value = phaseFilter; });
+}
+document.addEventListener('change', e => {
+  if (e.target.classList.contains('phaseFilter')){ phaseFilter = +e.target.value; fillPhaseFilters(); renderResults(); renderBodyParts(); }
+});
+const filtered = () => phaseFilter < 0 ? S.obs : S.obs.filter(o => o.p === phaseFilter);
+function catCounts(list){ const c = [0,0,0,0]; list.forEach(o => c[catOf(o)-1]++); return c; }
+function stackBar(counts, thin){
+  const n = counts.reduce((a,b) => a+b, 0); if (!n) return '';
+  return `<div class="stack${thin?' thin':''}">` + counts.map((c,i) => c ? `<div class="k${i+1}" style="flex:${c} 1 0" title="Categoría ${i+1} (${CATS[i].t}): ${c} obs., ${pctFmt(c/n*100)}">${!thin && c/n >= .08 ? pctFmt(c/n*100) : ''}</div>` : '').join('') + '</div>';
+}
+function bgBlock(){
+  return `<div class="card"><h2>${ico('info')}Información general</h2><table>` +
+    BG_LABELS.map((l,i) => `<tr><th style="width:200px">${l}</th><td>${esc(S.bg[i]||'')}</td></tr>`).join('') +
+    `<tr><th>Intervalo de tiempo</th><td>${S.interval} s</td></tr></table></div>`;
+}
+function resultsHTML(withGallery = true){
+  const list = filtered(), n = list.length;
+  if (!n) return `<div class="card empty">No hay observaciones${phaseFilter >= 0 ? ' en esta fase' : ''}. Regístrelas en la pestaña «Observar» o abra un archivo .OWS.</div>`;
+  const c = catCounts(list);
+  let h = `<div class="card"><h2>${ico('chart')}Categorías de acción — ${phaseFilter < 0 ? 'todo el material' : esc(phaseName(phaseFilter))}</h2>
+    <p class="muted" style="margin-top:-6px">${n} observaciones${S.interval ? ` · tiempo observado aprox. ${Math.round(n*S.interval/60)} min` : ''}</p>
+    ${stackBar(c)}
+    <div class="legend">${CATS.map((k,i) => `<div>${catBadge(i+1,false)}<div><b>${k.t}</b> — ${c[i]} obs. (${pctFmt(c[i]/n*100)})<p>${k.d}</p></div></div>`).join('')}</div></div>`;
+  if (phaseFilter < 0 && S.phases.length > 1){
+    h += `<div class="card"><h2>${ico('layers')}Porcentaje por fases de trabajo</h2><div class="tbl-wrap"><table><tr><th>Fase</th><th class="n">Obs.</th><th class="n">% del total</th>${[1,2,3,4].map(k => `<th class="n">Cat. ${k}</th>`).join('')}<th style="min-width:140px"></th></tr>` +
+      S.phases.map((p,i) => { const l = S.obs.filter(o => o.p === i), m = l.length, cc = catCounts(l);
+        return `<tr><td>${esc(phaseName(i))}</td><td class="n">${m}</td><td class="n">${pctFmt(m/S.obs.length*100)}</td>${cc.map(x => `<td class="n">${m ? pctFmt(x/m*100) : '–'}</td>`).join('')}<td>${stackBar(cc, true)}</td></tr>`; }).join('') +
+      `</table></div></div>`;
+  }
+  const freq = new Map(); list.forEach(o => { const k = codeStr(o); freq.set(k, (freq.get(k)||0) + 1); });
+  const byCat = [[],[],[],[]];
+  [...freq.entries()].sort((a,b) => b[1]-a[1]).forEach(([k,f]) => byCat[catOf({b:+k[0], a:+k[1], l:+k[2], w:+k[3]})-1].push([k,f]));
+  h += `<div class="card"><h2>${ico('list')}Posturas por categoría</h2><div class="cats4">` + byCat.map((rows,i) =>
+    `<div class="col"><h3>${catBadge(i+1)}</h3><div class="scroll"><table><tr><th>Postura</th><th class="n">Frec.</th><th class="n">%</th></tr>` +
+    (rows.length ? rows.map(([k,f]) => `<tr><td title="${esc(describe(k))}">${k}</td><td class="n">${f}</td><td class="n">${pctFmt(f/n*100)}</td></tr>`).join('') : `<tr><td colspan="3" class="muted small">Ninguna</td></tr>`) +
+    `</table></div></div>`).join('') + `</div><p class="small muted">Pase el puntero sobre un código para ver su descripción.</p></div>`;
+  h += agreementHTML(list);
+  if (withGallery) h += galleryHTML(list);
+  return h;
+}
+// Marca si el código aceptado coincide con la propuesta automática o si se corrigió
+function detTag(o){
+  if (!o.det) return '';
+  return o.det === `${o.b}${o.a}${o.l}`
+    ? '<span class="tag ok" title="Coincide con la propuesta automática">auto</span>'
+    : `<span class="tag fix" title="Propuesta automática: ${o.det}">corregido</span>`;
+}
+// Cuántas veces la propuesta automática coincidió con el código aceptado, por parte del cuerpo
+function agreementHTML(list){
+  const d = list.filter(o => o.det);
+  if (!d.length) return '';
+  const row = (name, f) => { const ok = d.filter(f).length; return `<tr><td>${name}</td><td class="n">${ok} de ${d.length}</td><td class="n">${pctFmt(ok / d.length * 100)}</td></tr>`; };
+  return `<div class="card"><h2>${ico('scan')}Concordancia con la detección automática</h2>
+    <p class="small muted" style="margin-top:-6px">Observaciones con propuesta automática: ${d.length}. Indica cuántas veces se aceptó la propuesta sin corregirla.</p>
+    <div class="tbl-wrap"><table><tr><th>Parte</th><th class="n">Coincidencias</th><th class="n">%</th></tr>
+    ${row('Espalda', o => +o.det[0] === o.b)}${row('Brazos', o => +o.det[1] === o.a)}${row('Piernas', o => +o.det[2] === o.l)}${row('Código completo (sin carga)', o => o.det === `${o.b}${o.a}${o.l}`)}
+    </table></div></div>`;
+}
+// Imágenes de las observaciones, de la categoría más grave a la menos grave
+function galleryHTML(list){
+  const items = list.map(o => [o, S.obs.indexOf(o)]).filter(([o]) => o.img).sort((x, y) => catOf(y[0]) - catOf(x[0]) || x[1] - y[1]);
+  if (!items.length) return '';
+  return `<div class="card"><h2>${ico('image')}Imágenes de las observaciones</h2><p class="small muted" style="margin-top:-6px">${items.length} imágenes, ordenadas de mayor a menor riesgo.</p><div class="gallery">` +
+    items.map(([o, i]) => `<figure><button data-view="${i}" aria-label="Ampliar la imagen de la observación ${i+1}"><img src="${o.img}" alt="" loading="lazy"></button>
+      <figcaption>${catBadge(catOf(o), false)}<b>${codeStr(o)}</b><span class="muted">Obs. ${i+1} · ${esc(phaseName(o.p))}${o.t != null ? ' · ' + fmtTime(o.t) : ''}</span></figcaption></figure>`).join('') + '</div></div>';
+}
+function describe(k){ return PARTS.map((p,i) => `${p.name}: ${p.opts[k[i]-1]}`).join(' · '); }
+function renderResults(){ fillPhaseFilters(); $('#results').innerHTML = resultsHTML(); }
+
+function bodyHTML(){
+  const list = filtered(), n = list.length;
+  if (!n) return `<div class="card empty">No hay observaciones${phaseFilter >= 0 ? ' en esta fase' : ''}.</div>`;
+  let h = '';
+  PARTS.forEach(p => {
+    h += `<div class="card"><h2>${ico('body')}${p.name}</h2>`;
+    if (BODY[p.key]) h += `<div class="scale"><span class="lab"></span><span class="ticks"><span>0 %</span><span>50 %</span><span>100 %</span></span><span class="ph"></span></div>`;
+    p.opts.forEach((name,i) => {
+      const f = list.filter(o => o[p.key] === i+1).length, pc = f/n*100;
+      if (BODY[p.key]){
+        const k = bodyCat(p.key, i, pc), t = BODY[p.key][i];
+        h += `<div class="bp-row"><div class="bp-name"><b>${i+1}</b>${pict(p.key, i+1)}${name}</div>
+          <div class="track" title="${f} obs. (${pctFmt(pc)}) — categoría ${k}">${t.map((w,j) => w ? `<div class="band k${j+1}" style="flex:${w} 1 0"></div>` : '').join('')}<div class="val" style="width:${pc}%"></div></div>
+          <div class="bp-out"><span>${pctFmt(pc)}</span>${f ? catBadge(k,false) : '<span class="muted small">—</span>'}</div></div>`;
+      } else {
+        h += `<div class="bp-row"><div class="bp-name"><b>${i+1}</b>${pict(p.key, i+1)}${name}</div><div class="track"><div class="band" style="flex:1;background:var(--line-soft)"></div><div class="val" style="width:${pc}%"></div></div><div class="bp-out">${f} obs. · ${pctFmt(pc)}</div></div>`;
+      }
+    });
+    h += `</div>`;
+  });
+  h += `<div class="card"><h3>Cómo leer esta gráfica</h3><p class="small muted" style="margin:0">La barra oscura indica el porcentaje del tiempo observado en cada postura. Las franjas de fondo muestran qué categoría de acción corresponde según la proporción del tiempo (verde 1, amarillo 2, naranja 3, rojo 4). La carga no tiene clasificación por tiempo.</p></div>`;
+  return h;
+}
+function renderBodyParts(){ fillPhaseFilters(); $('#bodyparts').innerHTML = bodyHTML(); }
+
+// ---- Lista de observaciones ----
+function renderList(){
+  if (!S.obs.length){ $('#obsTable').innerHTML = '<div class="empty">No hay observaciones.</div>'; return; }
+  const withImg = S.obs.some(o => o.img);
+  $('#obsTable').innerHTML = `<table><tr><th class="n">#</th>${withImg ? '<th>Imagen</th>' : ''}<th>Código</th><th>Postura</th><th>Fase</th><th>Categoría</th><th></th></tr>` +
+    S.obs.map((o,i) => [o,i]).reverse().map(([o,i]) => `<tr><td class="n">${i+1}</td>${withImg ? `<td>${o.img ? `<button class="thumb" data-view="${i}" aria-label="Ver imagen de la observación ${i+1}"><img src="${o.img}" alt="" loading="lazy"></button>` : '<span class="muted">—</span>'}</td>` : ''}<td><b>${codeStr(o)}</b>${detTag(o)}</td><td class="postura" title="${esc(describe(codeStr(o)))}">${PARTS.map(p => pict(p.key, o[p.key])).join('')}<span class="sr">${esc(describe(codeStr(o)))}</span></td><td class="small">${esc(phaseName(o.p))}${o.t != null ? `<br><span class="muted">${fmtTime(o.t)}</span>` : ''}</td><td>${catBadge(catOf(o),false)}</td><td><button class="btn danger icon-only" data-del="${i}" title="Eliminar observación" aria-label="Eliminar observación ${i+1}">${ico('trash')}</button></td></tr>`).join('') + '</table>';
+}
+$('#obsTable').addEventListener('click', e => {
+  const b = e.target.closest('[data-del]'); if (!b) return;
+  S.obs.splice(+b.dataset.del, 1); changed(); renderList();
+});
+$('#clearAll').onclick = () => { if (S.obs.length && confirm(`¿Eliminar las ${S.obs.length} observaciones?`)){ S.obs = []; changed(); renderList(); } };
+
+// ---- Imprimir y copiar ----
+function doPrint(){
+  const title = `<h1>WinOWAS — ${esc(fileName || 'Estudio OWAS')}</h1><p class="muted" style="margin-top:0">${esc(S.bg[2]||'')}</p>`;
+  $('#print').innerHTML = title + ($('#printBg').checked ? bgBlock() : '') + resultsHTML(false) + bodyHTML() + ($('#printImg').checked ? galleryHTML(filtered()) : '');
+  window.print();
+}
+function copyResults(){
+  const list = filtered(), n = list.length, c = catCounts(list);
+  const lines = ['WinOWAS — ' + (fileName || 'Estudio OWAS'), ...BG_LABELS.map((l,i) => `${l}: ${S.bg[i]||''}`), `Intervalo: ${S.interval} s`,
+    `Material: ${phaseFilter < 0 ? 'Todo el material' : phaseName(phaseFilter)}`, `Observaciones: ${n}`, '',
+    'Categoría\tObs.\t%', ...c.map((x,i) => `${i+1} ${CATS[i].t}\t${x}\t${n ? (x/n*100).toFixed(1) : 0}`), '',
+    'Parte\tPostura\tObs.\t%\tCategoría'];
+  PARTS.forEach(p => p.opts.forEach((o,i) => { const f = list.filter(x => x[p.key] === i+1).length, pc = n ? f/n*100 : 0;
+    lines.push(`${p.name}\t${i+1} ${o}\t${f}\t${pc.toFixed(1)}\t${BODY[p.key] && f ? bodyCat(p.key,i,pc) : ''}`); }));
+  const txt = lines.join('\n');
+  (navigator.clipboard ? navigator.clipboard.writeText(txt) : Promise.reject()).then(() => alert('Resultados copiados al portapapeles.'), () => {
+    const ta = document.createElement('textarea'); ta.value = txt; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); ta.remove(); alert('Resultados copiados al portapapeles.');
+  });
+}
+$('#copyBtn').onclick = copyResults;
+
+// ---- Ayuda ----
+$('#helpBox').innerHTML = `<h2>${ico('help')}Ayuda</h2>
+<p>OWAS (<i>Ovako Working posture Analysing System</i>) clasifica las posturas de trabajo mediante un código de cuatro dígitos: espalda, brazos, piernas y carga. Cada combinación tiene una categoría de acción del 1 al 4.</p>
+<h3>Pasos</h3>
+<ol><li>En <b>Datos generales</b>, rellene la información del estudio, el intervalo de observación y las fases de trabajo.</li>
+<li>En <b>Observar</b>, elija el modo:
+  <ul><li><b>En vivo</b>: inicie el reloj. En cada pitido, seleccione la postura observada (o escriba sus dígitos) y pulse <b>Aceptar</b>.</li>
+  <li><b>Video</b>: cargue un video MP4 o WebM. Avance fotograma a fotograma o salte a la siguiente muestra según el intervalo, codifique la postura y pulse <b>Aceptar</b>. El fotograma se guarda como imagen de la observación, y las marcas de colores sobre la barra de tiempo muestran lo ya registrado.</li>
+  <li><b>Fotografías</b>: cargue una o varias fotos, codifique la postura de cada una y pulse <b>Aceptar</b>. La foto queda asociada a la observación.</li></ul></li>
+<li>En video y fotografías, <b>Detectar postura</b> (tecla <span class="kbd">D</span>) localiza a la persona con MediaPipe Pose, dibuja su esqueleto y propone los dígitos de espalda, brazos y piernas. La carga siempre se elige a mano. Con «Detectar al llegar a cada muestra o fotografía», el análisis queda en: revisar la propuesta, corregirla si hace falta y pulsar <span class="kbd">Enter</span>. Funciona mejor con una sola persona, de cuerpo entero y vista lateral o en diagonal. El giro de la espalda es la medida menos fiable. En la lista, «auto» indica que se aceptó la propuesta y «corregido» que se cambió.</li>
+<li>Consulte <b>Categorías de acción</b> y <b>Por parte del cuerpo</b>. Puede filtrar por fase de trabajo.</li>
+<li>Use <b>Guardar</b> para crear un archivo .OWS compatible con el WinOWAS original, e <b>Imprimir</b> para imprimir o guardar en PDF.</li></ol>
+<h3>Categorías de acción</h3>
+<div class="legend" style="margin-bottom:14px">${CATS.map((k,i) => `<div>${catBadge(i+1,false)}<div><b>${k.t}</b><p>${k.d}</p></div></div>`).join('')}</div>
+<h3>Códigos</h3>
+<div class="grid2">${PARTS.map(p => `<div><b>${p.name}</b>${p.opts.map((o,i) => `<div class="bp-name" style="margin:4px 0"><b>${i+1}</b>${pict(p.key, i+1)}${o}</div>`).join('')}</div>`).join('')}</div>
+<h3 style="margin-top:14px">Archivos</h3>
+<p class="small">Esta aplicación abre y guarda archivos <b>.OWS</b> del WinOWAS original, que contienen solo los datos. Los estudios con imágenes se guardan como proyecto <b>.owsp</b>, que incluye cada imagen. El video original no se guarda dentro del proyecto: conserve el archivo de video para volver a revisarlo. «Unir archivo» añade las observaciones de otro archivo al estudio actual. El trabajo se guarda además automáticamente en este navegador, pero conviene guardar el archivo. No se admiten los archivos del OWAS para DOS.</p>
+<p class="small muted">WinOWAS Web 3.0. Tablas de clasificación tomadas del WinOWAS original (Universidad Tecnológica de Tampere, 1996). Detección de posturas con MediaPipe Pose (© Google LLC, licencia Apache 2.0), incluido en este archivo.</p>`;
+
+// ---- Inicio ----
+document.querySelector('.top .actions').addEventListener('click', e => {
+  const a = e.target.closest('[data-act]'); if (!a) return;
+  ({new:newFile, open:openFile, join:joinFile, save:() => saveFile(false), saveas:() => saveFile(true), print:doPrint})[a.dataset.act]();
+});
+$('#tabs').addEventListener('click', e => { const b = e.target.closest('[data-tab]'); if (b) showTab(b.dataset.tab); });
+$('#restoredClose').onclick = () => $('#restored').hidden = true;
+window.addEventListener('beforeunload', e => { if (dirty){ e.preventDefault(); e.returnValue = ''; } });
+$$('.top .actions button').forEach(el => { const t = el.textContent.trim(); el.setAttribute('aria-label', t); el.innerHTML = `<span class="lbl">${t}</span>`; });
+$$('[data-icon]').forEach(el => el.insertAdjacentHTML('afterbegin', ico(el.dataset.icon)));
+function renderAll(){ renderHeader(); renderData(); fillPhaseFilters(); renderObserve(); renderResults(); renderBodyParts(); renderList(); }
+renderVideoUI();
+(async () => {
+  let saved = null;
+  try{ saved = await idb.get('autosave'); }catch(e){}
+  if (!saved){ try{ saved = JSON.parse(localStorage.getItem('winowas.autosave') || 'null'); }catch(e){} }
+  if (saved && saved.S && Array.isArray(saved.S.obs)){
+    S = saved.S; fileName = saved.fileName || ''; dirty = !!saved.dirty;
+    if (dirty) $('#restored').hidden = false;
+  }
+  renderAll();
+})();
+</script>
+<!-- MediaPipe Tasks Vision 0.10.35 y modelo Pose Landmarker (full), © Google LLC, licencia Apache 2.0.
+     build.py reemplaza cada marcador por el archivo de vendor/mediapipe en base64. -->
+<script type="application/octet-stream" id="mp-bundle">@@MP_BUNDLE@@</script>
+<script type="application/octet-stream" id="mp-loader">@@MP_LOADER@@</script>
+<script type="application/octet-stream" id="mp-wasm">@@MP_WASM@@</script>
+<script type="application/octet-stream" id="mp-model">@@MP_MODEL@@</script>
+</body>
+</html>

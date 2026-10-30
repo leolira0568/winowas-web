@@ -7,6 +7,7 @@ El WinOWAS original era un programa de Windows 3.x de 16 bits (Visual Basic 3) q
 - Funciona sin instalación ni conexión a internet: se abre con doble clic en cualquier navegador moderno.
 - Abre y guarda archivos **`.OWS` compatibles con el WinOWAS original**, así que los estudios existentes siguen sirviendo.
 - Funciona en Windows, macOS, Linux, tabletas y celulares.
+- Desde la versión 3.0 detecta posturas en fotos y videos con MediaPipe, incluido dentro del mismo archivo (pesa unos 28 MB).
 
 **▶ Usar en línea:** https://leolira0568.github.io/winowas-web/
 
@@ -17,6 +18,7 @@ El WinOWAS original era un programa de Windows 3.x de 16 bits (Visual Basic 3) q
   - **En vivo**: reloj con aviso sonoro en cada intervalo.
   - **Video** *(nuevo en 2.0)*: carga un video MP4 o WebM y lo revisa fotograma a fotograma, segundo a segundo o saltando a cada instante de muestreo según el intervalo. Al aceptar, el fotograma se guarda como imagen de la observación y queda marcado con su color de categoría en la barra de tiempo.
   - **Fotografías** *(nuevo en 2.0)*: carga varias fotos y registra una observación por foto, con su imagen.
+- **Detección automática de posturas** *(nuevo en 3.0)*: en los modos Video y Fotografías, **Detectar postura** (tecla `D`) localiza a la persona con [MediaPipe Pose](https://ai.google.dev/edge/mediapipe/solutions/vision/pose_landmarker), dibuja su esqueleto y propone los dígitos de espalda, brazos y piernas, con los ángulos medidos. La carga se elige siempre a mano. Puede detectar automáticamente al llegar a cada muestra o foto. La lista marca cada código como «auto» (aceptado) o «corregido», y los resultados muestran la concordancia por parte del cuerpo. Los umbrales se pueden ajustar.
 - **Imágenes** *(nuevo en 2.0)*: miniaturas en la lista de observaciones, galería ordenada por riesgo en los resultados, visor ampliado con salto al momento del video, e impresión de las imágenes en el informe.
 - **Categorías de acción**: distribución en las categorías 1–4 con sus recomendaciones, desglose por fase de trabajo y posturas agrupadas por categoría.
 - **Por parte del cuerpo**: porcentaje del tiempo en cada postura de espalda, brazos y piernas, comparado con los límites de cada categoría.
@@ -49,6 +51,18 @@ Cada observación se codifica con cuatro dígitos:
 | 3 | Se requieren acciones correctivas lo antes posible. |
 | 4 | Se requieren acciones correctivas inmediatamente. |
 
+## Cómo se calcula la propuesta automática
+
+Se usan los 33 puntos 3D que estima MediaPipe Pose (en metros, con origen entre las caderas). Los umbrales por defecto se pueden cambiar en *Ajustes de detección*:
+
+| Parte | Regla |
+|---|---|
+| Espalda | **Inclinada** si el tronco (de caderas a hombros) forma 20° o más con la vertical en el plano sagital. **Girada** si la línea de hombros y la de caderas difieren 20° o más en el plano horizontal, o si el tronco se inclina de lado 20° o más. |
+| Brazos | Número de brazos con el codo o la muñeca por encima del hombro, más uno. |
+| Piernas | **Arrodillado** si una rodilla está cerca del suelo. **Sentado** si ambos muslos están casi horizontales y la cadera está baja. **Una pierna** si un pie está levantado al menos un 10 % de la longitud de la pierna; con la rodilla de apoyo por debajo de 150°, flexionada. **Ambas piernas** con alguna rodilla por debajo de 150°: flexionadas. **Caminando** (solo video) si la cadera se desplaza al menos un 25 % del tronco en 0,5 s. |
+
+La detección es una ayuda y no reemplaza el criterio de quien observa. Funciona mejor con una sola persona de cuerpo entero, vista de lado o en diagonal. El giro de la espalda es la medida menos fiable desde una sola cámara.
+
 ## Formato de archivo `.OWS`
 
 Texto plano con codificación Windows-1252 y finales de línea CRLF:
@@ -78,14 +92,26 @@ Los estudios con imágenes se guardan como JSON (UTF-8):
 { "format": "winowas-proyecto", "version": 2,
   "S": { "bg": [...], "phases": [...], "interval": 30,
          "obs": [ { "b": 2, "a": 1, "l": 3, "w": 1, "p": 0,
-                    "img": "data:image/jpeg;base64,...", "t": 12.5, "src": "video.mp4" } ] } }
+                    "img": "data:image/jpeg;base64,...", "t": 12.5, "src": "video.mp4",
+                    "det": "213" } ] } }
 ```
 
-`img` es el fotograma o la foto (JPEG de 800 px como máximo), `t` el segundo del video y `src` el nombre del archivo de origen. El video no se incluye en el proyecto.
+`img` es el fotograma o la foto (JPEG de 800 px como máximo), `t` el segundo del video, `src` el nombre del archivo de origen y `det` la propuesta automática de espalda, brazos y piernas, si la hubo (`0` en piernas significa que no se pudo detectar). El video no se incluye en el proyecto.
+
+## Desarrollo
+
+El código editable está en [`src/WinOWAS.html`](src/WinOWAS.html). El archivo publicado `WinOWAS.html` se genera con:
+
+```
+python build.py
+```
+
+El script incrusta en base64 los archivos de [`vendor/mediapipe/`](vendor/mediapipe/): MediaPipe Tasks Vision 0.10.35 y el modelo Pose Landmarker *full*. Para probar `src/WinOWAS.html` sin compilar, sírvelo con un servidor local (por ejemplo `python -m http.server`): en ese caso lee los archivos de `vendor/`.
 
 ## Versiones
 
-- **2.0**: análisis por video fotograma a fotograma y por fotografías, con una imagen por observación y el formato `.owsp`.
+- **3.0**: detección automática de posturas con MediaPipe, incluida en el archivo para funcionar sin internet.
+- **[2.0](https://github.com/leolira0568/winowas-web/releases/tag/v2.0)**: análisis por video fotograma a fotograma y por fotografías, con una imagen por observación y el formato `.owsp`.
 - **[1.0](https://github.com/leolira0568/winowas-web/releases/tag/v1.0)**: observación en vivo, compatible con `.OWS`.
 
 ## Aviso
@@ -99,3 +125,5 @@ Los resultados son una ayuda para la evaluación ergonómica y no sustituyen el 
 [MIT](LICENSE) © 2026 Leonardo
 
 Los iconos de la interfaz están basados en [Lucide](https://lucide.dev) (licencia ISC, © Lucide Contributors). Los pictogramas de postura son propios del proyecto.
+
+`WinOWAS.html` incluye MediaPipe Tasks Vision y el modelo Pose Landmarker, © Google LLC, bajo la [licencia Apache 2.0](vendor/mediapipe/LICENSE). Ver [`vendor/mediapipe/README.md`](vendor/mediapipe/README.md).
