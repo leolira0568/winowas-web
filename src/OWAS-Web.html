@@ -9,6 +9,7 @@
   --bg:#f3f2ef; --surface:#fcfcfb; --surface-2:#f7f6f3; --line:#dcdad3; --line-soft:#ebe9e3;
   --ink:#0b0b0b; --ink-2:#52514e; --ink-3:#6b6962;
   --accent:#2a78d6; --accent-ink:#ffffff; --accent-soft:#e3eefb;
+  --ok:#1b7d1b; --ok-hover:#156615;   /* verde de «Aceptar»: contraste 5,2:1 con texto blanco */
   --c1:#0ca30c; --c2:#fab219; --c3:#ec835a; --c4:#d03b3b;
   --c1-soft:#d8f0d8; --c2-soft:#fdeec9; --c3-soft:#fbe0d4; --c4-soft:#f5d3d3;
   --radius:10px;
@@ -113,6 +114,14 @@ section.tab.on{display:block}
 .btn:hover{background:var(--surface-2)}
 .btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink);font-weight:600}
 .btn.primary:hover{filter:brightness(1.08)}
+.btn.ok{background:var(--ok);border-color:var(--ok);color:#fff;font-weight:600}
+.btn.ok:hover{background:var(--ok-hover);border-color:var(--ok-hover)}
+.btn.ok .kbd{background:rgba(255,255,255,.18);border-color:rgba(255,255,255,.6);color:#fff}
+
+/* Pie de página: enlace al proyecto y licencias */
+.foot{max-width:1180px;margin:8px auto 0;padding:16px;border-top:1px solid var(--line);color:var(--ink-2);font-size:13px;line-height:1.6;display:flex;flex-wrap:wrap;gap:4px 18px;justify-content:space-between}
+.foot a{color:var(--accent)}
+.foot p{margin:0}
 .btn.danger{color:var(--c4)}
 .btn:disabled{opacity:.45;cursor:default}
 label.field{display:block;margin-bottom:10px}
@@ -216,7 +225,7 @@ td.n,th.n{text-align:right;font-variant-numeric:tabular-nums}
 
 @media print{
   body{background:#fff}
-  .top,.tabs,main,.notice{display:none !important}
+  .top,.tabs,main,.notice,.foot{display:none !important}
   #print{display:block;padding:0}
   .card{border:0;padding:0;margin-bottom:18px;break-inside:avoid}
   .apa{break-inside:avoid}
@@ -344,7 +353,7 @@ td.n,th.n{text-align:right;font-variant-numeric:tabular-nums}
         </div>
       </div>
       <div class="obs-actions">
-        <button class="btn primary" id="accept" data-icon="check">Aceptar <span class="kbd">Enter</span></button>
+        <button class="btn ok" id="accept" data-icon="check">Aceptar <span class="kbd">Enter</span></button>
         <button class="btn" id="repeat" data-icon="repeat">Repetir anterior <span class="kbd">R</span></button>
         <button class="btn" id="takeback" data-icon="undo">Deshacer última <span class="kbd">Supr</span></button>
         <button class="btn" id="clearSel" data-icon="eraser">Limpiar <span class="kbd">Esc</span></button>
@@ -384,6 +393,10 @@ td.n,th.n{text-align:right;font-variant-numeric:tabular-nums}
     <div class="card" id="helpBox"></div>
   </section>
 </main>
+<footer class="foot">
+  <p><b>OWAS Web</b> · © 2026 Leonardo Lira · Código abierto con <a href="https://github.com/leolira0568/owas-web/blob/main/LICENSE" target="_blank" rel="noopener">licencia MIT</a> · <a href="https://github.com/leolira0568/owas-web" target="_blank" rel="noopener">Proyecto en GitHub</a></p>
+  <p>Detección de posturas: MediaPipe Pose © Google LLC, <a href="https://github.com/leolira0568/owas-web/blob/main/vendor/mediapipe/LICENSE" target="_blank" rel="noopener">licencia Apache 2.0</a> · Iconos basados en <a href="https://lucide.dev" target="_blank" rel="noopener">Lucide</a> (ISC) · Método OWAS: Karhu et al. (1977)</p>
+</footer>
 <div id="print"></div>
 <input type="file" id="fileOpen" accept=".ows,.OWS,.owsp" hidden>
 <input type="file" id="fileJoin" accept=".ows,.OWS,.owsp" hidden>
@@ -1496,7 +1509,7 @@ $('#helpBox').innerHTML = `<h2>${ico('help')}Ayuda</h2>
 <div class="grid2">${PARTS.map(p => `<div><b>${p.name}</b>${p.opts.map((o,i) => `<div class="bp-name" style="margin:4px 0"><b>${i+1}</b>${pict(p.key, i+1)}${o}</div>`).join('')}</div>`).join('')}</div>
 <h3 style="margin-top:14px">Archivos</h3>
 <p class="small">Esta aplicación abre y guarda archivos <b>.OWS</b> del WinOWAS original, que contienen solo los datos. Los estudios con imágenes se guardan como proyecto <b>.owsp</b>, que incluye cada imagen. El video original no se guarda dentro del proyecto: conserve el archivo de video para volver a revisarlo. «Unir archivo» añade las observaciones de otro archivo al estudio actual. El trabajo se guarda además automáticamente en este navegador, pero conviene guardar el archivo. No se admiten los archivos del OWAS para DOS.</p>
-<p class="small muted">OWAS Web 3.7 (antes WinOWAS Web). Tablas de clasificación tomadas del WinOWAS original (Universidad Tecnológica de Tampere, 1996). Detección de posturas con MediaPipe Pose (© Google LLC, licencia Apache 2.0), incluido en este archivo.</p>`;
+<p class="small muted">OWAS Web 3.8 (antes WinOWAS Web), © 2026 Leonardo Lira, licencia MIT. Tablas de clasificación tomadas del WinOWAS original (Universidad Tecnológica de Tampere, 1996). Detección de posturas con MediaPipe Pose (© Google LLC, licencia Apache 2.0), incluido en este archivo.</p>`;
 
 // ---- Inicio ----
 document.querySelector('.top .actions').addEventListener('click', e => {
