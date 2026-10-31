@@ -268,9 +268,9 @@ td.n,th.n{text-align:right;font-variant-numeric:tabular-nums}
 
   <section class="tab" id="tab-observar">
     <div class="seg" id="modeSeg" role="group" aria-label="Modo de observación">
-      <button data-mode="live" data-icon="timer" aria-pressed="true" class="on">En vivo</button>
       <button data-mode="video" data-icon="video" aria-pressed="false">Video</button>
       <button data-mode="photo" data-icon="image" aria-pressed="false">Fotografías</button>
+      <button data-mode="live" data-icon="timer" aria-pressed="true" class="on">En vivo</button>
     </div>
     <div class="card" id="mediaCard" hidden>
       <div id="videoPane">
@@ -1496,7 +1496,7 @@ $('#helpBox').innerHTML = `<h2>${ico('help')}Ayuda</h2>
 <div class="grid2">${PARTS.map(p => `<div><b>${p.name}</b>${p.opts.map((o,i) => `<div class="bp-name" style="margin:4px 0"><b>${i+1}</b>${pict(p.key, i+1)}${o}</div>`).join('')}</div>`).join('')}</div>
 <h3 style="margin-top:14px">Archivos</h3>
 <p class="small">Esta aplicación abre y guarda archivos <b>.OWS</b> del WinOWAS original, que contienen solo los datos. Los estudios con imágenes se guardan como proyecto <b>.owsp</b>, que incluye cada imagen. El video original no se guarda dentro del proyecto: conserve el archivo de video para volver a revisarlo. «Unir archivo» añade las observaciones de otro archivo al estudio actual. El trabajo se guarda además automáticamente en este navegador, pero conviene guardar el archivo. No se admiten los archivos del OWAS para DOS.</p>
-<p class="small muted">OWAS Web 3.5 (antes WinOWAS Web). Tablas de clasificación tomadas del WinOWAS original (Universidad Tecnológica de Tampere, 1996). Detección de posturas con MediaPipe Pose (© Google LLC, licencia Apache 2.0), incluido en este archivo.</p>`;
+<p class="small muted">OWAS Web 3.6 (antes WinOWAS Web). Tablas de clasificación tomadas del WinOWAS original (Universidad Tecnológica de Tampere, 1996). Detección de posturas con MediaPipe Pose (© Google LLC, licencia Apache 2.0), incluido en este archivo.</p>`;
 
 // ---- Inicio ----
 document.querySelector('.top .actions').addEventListener('click', e => {
