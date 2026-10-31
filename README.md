@@ -114,7 +114,8 @@ El script incrusta en base64 los archivos de [`vendor/mediapipe/`](vendor/mediap
 
 ## Versiones
 
-- **3.6**: en Observar, los modos aparecen en el orden Video, Fotografías y En vivo.
+- **3.7**: el modo Video es el que aparece seleccionado al abrir la aplicación.
+- **[3.6](https://github.com/leolira0568/owas-web/releases/tag/v3.6)**: en Observar, los modos aparecen en el orden Video, Fotografías y En vivo.
 - **[3.5](https://github.com/leolira0568/owas-web/releases/tag/v3.5)**: el proyecto pasa a llamarse **OWAS Web** (archivo `OWAS-Web.html`, repositorio `owas-web`).
 - **[3.4](https://github.com/leolira0568/owas-web/releases/tag/v3.4)**: la tecla de atajo de los botones azules ya no parece una casilla vacía; las casillas de detección no recuperan un estado anterior al recargar.
 - **[3.3](https://github.com/leolira0568/owas-web/releases/tag/v3.3)**: subtítulos con los datos de la detección debajo del video o la foto, grabados también en la imagen guardada; los datos aparecen en la galería, el visor y una nueva tabla APA de mediciones.
