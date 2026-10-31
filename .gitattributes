@@ -3,5 +3,5 @@
 *.wasm binary
 *.task binary
 # Archivo generado por build.py: no mostrar diferencias
-/WinOWAS.html -diff linguist-generated
+/OWAS-Web.html -diff linguist-generated
 vendor/** -text

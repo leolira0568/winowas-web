@@ -1,6 +1,6 @@
-"""Genera WinOWAS.html, un solo archivo que funciona sin internet.
+"""Genera OWAS-Web.html, un solo archivo que funciona sin internet.
 
-Toma src/WinOWAS.html y reemplaza cada marcador @@MP_...@@ por el archivo
+Toma src/OWAS-Web.html y reemplaza cada marcador @@MP_...@@ por el archivo
 correspondiente de vendor/mediapipe codificado en base64.
 
 Uso: python build.py
@@ -17,13 +17,13 @@ ASSETS = {
     'MP_MODEL': 'pose_landmarker_full.task',
 }
 
-html = (ROOT / 'src' / 'WinOWAS.html').read_text(encoding='utf-8')
+html = (ROOT / 'src' / 'OWAS-Web.html').read_text(encoding='utf-8')
 for key, name in ASSETS.items():
     marker = f'@@{key}@@'
     if html.count(marker) != 1:
-        raise SystemExit(f'Se esperaba exactamente un marcador {marker} en src/WinOWAS.html')
+        raise SystemExit(f'Se esperaba exactamente un marcador {marker} en src/OWAS-Web.html')
     html = html.replace(marker, base64.b64encode((VENDOR / name).read_bytes()).decode('ascii'))
 
-out = ROOT / 'WinOWAS.html'
+out = ROOT / 'OWAS-Web.html'
 out.write_text(html, encoding='utf-8', newline='')
 print(f'{out.name}: {out.stat().st_size / 1e6:.1f} MB')

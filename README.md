@@ -1,6 +1,6 @@
-# WinOWAS Web
+# OWAS Web
 
-Versión web, libre y de código abierto, de **WinOWAS**: la herramienta para analizar posturas de trabajo con el método **OWAS** (*Ovako Working posture Analysing System*).
+Herramienta libre y de código abierto para analizar posturas de trabajo con el método **OWAS** (*Ovako Working posture Analysing System*). Hasta la versión 3.4 se llamaba *WinOWAS Web*.
 
 El WinOWAS original era un programa de Windows 3.x de 16 bits (Visual Basic 3) que deja de funcionar a partir de Windows de 64 bits. Este proyecto lo reemplaza con **un solo archivo HTML**:
 
@@ -9,7 +9,7 @@ El WinOWAS original era un programa de Windows 3.x de 16 bits (Visual Basic 3) q
 - Funciona en Windows, macOS, Linux, tabletas y celulares.
 - Desde la versión 3.0 detecta posturas en fotos y videos con MediaPipe, incluido dentro del mismo archivo (pesa unos 28 MB).
 
-**▶ Usar en línea:** https://leolira0568.github.io/winowas-web/
+**▶ Usar en línea:** https://leolira0568.github.io/owas-web/
 
 ## Funciones
 
@@ -32,7 +32,7 @@ El WinOWAS original era un programa de Windows 3.x de 16 bits (Visual Basic 3) q
 
 ## Cómo usarlo sin internet
 
-1. Descarga [`WinOWAS.html`](WinOWAS.html) (botón *Download raw file* en GitHub).
+1. Descarga [`OWAS-Web.html`](OWAS-Web.html) (botón *Download raw file* en GitHub) o el archivo de la [última versión publicada](https://github.com/leolira0568/owas-web/releases/latest).
 2. Ábrelo con doble clic. Con Edge o Chrome, *Guardar* sobrescribe directamente el archivo `.OWS` abierto. En otros navegadores, el archivo se descarga.
 
 En la carpeta [`ejemplos/`](ejemplos/) hay un estudio de muestra para probar.
@@ -100,27 +100,28 @@ Los estudios con imágenes se guardan como JSON (UTF-8):
                     "det": "213" } ] } }
 ```
 
-`img` es el fotograma o la foto (JPEG de 800 px como máximo), `t` el segundo del video, `src` el nombre del archivo de origen y `det` la propuesta automática de espalda, brazos y piernas, si la hubo (`0` en piernas significa que no se pudo detectar), y `dm` los ángulos medidos en grados: `trunk` (tronco), `twist` (giro), `side` (lateral), `armsUp` (brazos sobre el hombro), `kneeL` y `kneeR` (rodillas) y `walk` (desplazamiento en %). El video no se incluye en el proyecto.
+`img` es el fotograma o la foto (JPEG de 800 px como máximo), `t` el segundo del video, `src` el nombre del archivo de origen y `det` la propuesta automática de espalda, brazos y piernas, si la hubo (`0` en piernas significa que no se pudo detectar), y `dm` los ángulos medidos en grados: `trunk` (tronco), `twist` (giro), `side` (lateral), `armsUp` (brazos sobre el hombro), `kneeL` y `kneeR` (rodillas) y `walk` (desplazamiento en %). El video no se incluye en el proyecto. El identificador `winowas-proyecto` se conserva del nombre anterior para que los proyectos sigan siendo compatibles entre versiones.
 
 ## Desarrollo
 
-El código editable está en [`src/WinOWAS.html`](src/WinOWAS.html). El archivo publicado `WinOWAS.html` se genera con:
+El código editable está en [`src/OWAS-Web.html`](src/OWAS-Web.html). El archivo publicado `OWAS-Web.html` se genera con:
 
 ```
 python build.py
 ```
 
-El script incrusta en base64 los archivos de [`vendor/mediapipe/`](vendor/mediapipe/): MediaPipe Tasks Vision 0.10.35 y el modelo Pose Landmarker *full*. Para probar `src/WinOWAS.html` sin compilar, sírvelo con un servidor local (por ejemplo `python -m http.server`): en ese caso lee los archivos de `vendor/`.
+El script incrusta en base64 los archivos de [`vendor/mediapipe/`](vendor/mediapipe/): MediaPipe Tasks Vision 0.10.35 y el modelo Pose Landmarker *full*. Para probar `src/OWAS-Web.html` sin compilar, sírvelo con un servidor local (por ejemplo `python -m http.server`): en ese caso lee los archivos de `vendor/`.
 
 ## Versiones
 
-- **3.4**: la tecla de atajo de los botones azules ya no parece una casilla vacía; las casillas de detección no recuperan un estado anterior al recargar.
-- **[3.3](https://github.com/leolira0568/winowas-web/releases/tag/v3.3)**: subtítulos con los datos de la detección debajo del video o la foto, grabados también en la imagen guardada; los datos aparecen en la galería, el visor y una nueva tabla APA de mediciones.
-- **[3.2](https://github.com/leolira0568/winowas-web/releases/tag/v3.2)**: «Detectar al llegar a cada muestra o fotografía» activado por defecto; también detecta al cargar un video.
-- **[3.1](https://github.com/leolira0568/winowas-web/releases/tag/v3.1)**: tablas y figuras en formato APA 7 en pantalla y en la impresión; botón «Detección automática de postura» destacado en azul.
-- **[3.0](https://github.com/leolira0568/winowas-web/releases/tag/v3.0)**: detección automática de posturas con MediaPipe, incluida en el archivo para funcionar sin internet.
-- **[2.0](https://github.com/leolira0568/winowas-web/releases/tag/v2.0)**: análisis por video fotograma a fotograma y por fotografías, con una imagen por observación y el formato `.owsp`.
-- **[1.0](https://github.com/leolira0568/winowas-web/releases/tag/v1.0)**: observación en vivo, compatible con `.OWS`.
+- **3.5**: el proyecto pasa a llamarse **OWAS Web** (archivo `OWAS-Web.html`, repositorio `owas-web`).
+- **[3.4](https://github.com/leolira0568/owas-web/releases/tag/v3.4)**: la tecla de atajo de los botones azules ya no parece una casilla vacía; las casillas de detección no recuperan un estado anterior al recargar.
+- **[3.3](https://github.com/leolira0568/owas-web/releases/tag/v3.3)**: subtítulos con los datos de la detección debajo del video o la foto, grabados también en la imagen guardada; los datos aparecen en la galería, el visor y una nueva tabla APA de mediciones.
+- **[3.2](https://github.com/leolira0568/owas-web/releases/tag/v3.2)**: «Detectar al llegar a cada muestra o fotografía» activado por defecto; también detecta al cargar un video.
+- **[3.1](https://github.com/leolira0568/owas-web/releases/tag/v3.1)**: tablas y figuras en formato APA 7 en pantalla y en la impresión; botón «Detección automática de postura» destacado en azul.
+- **[3.0](https://github.com/leolira0568/owas-web/releases/tag/v3.0)**: detección automática de posturas con MediaPipe, incluida en el archivo para funcionar sin internet.
+- **[2.0](https://github.com/leolira0568/owas-web/releases/tag/v2.0)**: análisis por video fotograma a fotograma y por fotografías, con una imagen por observación y el formato `.owsp`.
+- **[1.0](https://github.com/leolira0568/owas-web/releases/tag/v1.0)**: observación en vivo, compatible con `.OWS`.
 
 ## Aviso
 
@@ -134,4 +135,4 @@ Los resultados son una ayuda para la evaluación ergonómica y no sustituyen el 
 
 Los iconos de la interfaz están basados en [Lucide](https://lucide.dev) (licencia ISC, © Lucide Contributors). Los pictogramas de postura son propios del proyecto.
 
-`WinOWAS.html` incluye MediaPipe Tasks Vision y el modelo Pose Landmarker, © Google LLC, bajo la [licencia Apache 2.0](vendor/mediapipe/LICENSE). Ver [`vendor/mediapipe/README.md`](vendor/mediapipe/README.md).
+`OWAS-Web.html` incluye MediaPipe Tasks Vision y el modelo Pose Landmarker, © Google LLC, bajo la [licencia Apache 2.0](vendor/mediapipe/LICENSE). Ver [`vendor/mediapipe/README.md`](vendor/mediapipe/README.md).

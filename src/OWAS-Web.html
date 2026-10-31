@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>WinOWAS</title>
+<title>OWAS Web</title>
 <style>
 :root{
   --bg:#f3f2ef; --surface:#fcfcfb; --surface-2:#f7f6f3; --line:#dcdad3; --line-soft:#ebe9e3;
@@ -229,7 +229,7 @@ td.n,th.n{text-align:right;font-variant-numeric:tabular-nums}
 </head>
 <body>
 <header class="top">
-  <div class="brand">WinOWAS<span class="fname" id="fname"></span><span class="dirty" id="dirty"></span></div>
+  <div class="brand">OWAS Web<span class="fname" id="fname"></span><span class="dirty" id="dirty"></span></div>
   <div class="actions">
     <button data-act="new" data-icon="new" title="Empezar un estudio nuevo">Nuevo</button>
     <button data-act="open" data-icon="open" title="Abrir un archivo .OWS">Abrir…</button>
@@ -528,6 +528,7 @@ function changed(){ dirty = true; persist(); renderHeader(); }
 const idb = (() => {
   let p;
   const open = () => p || (p = new Promise((res, rej) => {
+    // Identificadores internos heredados de WinOWAS Web: se conservan para no perder el autoguardado
     const r = indexedDB.open('winowas', 1);
     r.onupgradeneeded = () => r.result.createObjectStore('kv');
     r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error);
@@ -593,6 +594,7 @@ function loadState(st, name, handle){
 const isProject = name => /\.owsp$/i.test(name || '');
 function parseProject(text){
   const j = JSON.parse(text);
+  // «winowas-proyecto» se mantiene para que los proyectos sigan siendo compatibles con versiones anteriores
   if (j.format !== 'winowas-proyecto' || !j.S || !Array.isArray(j.S.obs)) throw new Error('not project');
   const st = blank(); Object.assign(st, j.S);
   if (!st.phases.length) st.phases.push('');
@@ -604,7 +606,7 @@ async function readStudy(file){
 }
 const FILE_TYPES = {
   ows: {description:'Archivo OWAS (sin imágenes)', accept:{'application/octet-stream':['.ows']}},
-  owsp: {description:'Proyecto WinOWAS con imágenes', accept:{'application/json':['.owsp']}}
+  owsp: {description:'Proyecto OWAS Web con imágenes', accept:{'application/json':['.owsp']}}
 };
 async function pickFile(inputEl){
   if (window.showOpenFilePicker){
@@ -977,7 +979,7 @@ const pageParsed = new Promise(res => document.readyState === 'loading' ? docume
 async function embedded(id, file){
   await pageParsed;
   const txt = document.getElementById(id).textContent.trim();
-  // Sin compilar (src/WinOWAS.html servido por HTTP): se leen los archivos de vendor/
+  // Sin compilar (src/OWAS-Web.html servido por HTTP): se leen los archivos de vendor/
   if (txt.startsWith('@@')) return new Uint8Array(await (await fetch('../vendor/mediapipe/' + file)).arrayBuffer());
   const bin = atob(txt), out = new Uint8Array(bin.length);
   for (let i = 0; i < bin.length; i++) out[i] = bin.charCodeAt(i);
@@ -1454,7 +1456,7 @@ $('#clearAll').onclick = () => { if (S.obs.length && confirm(`¿Eliminar las ${S
 
 // ---- Imprimir y copiar ----
 function doPrint(){
-  const title = `<h1>WinOWAS — ${esc(fileName || 'Estudio OWAS')}</h1><p class="muted" style="margin-top:0">${esc(S.bg[2]||'')}</p>`;
+  const title = `<h1>OWAS Web — ${esc(fileName || 'Estudio OWAS')}</h1><p class="muted" style="margin-top:0">${esc(S.bg[2]||'')}</p>`;
   const apa = $('#printApa').checked ? apaSections() : null;
   $('#print').innerHTML = title + ($('#printBg').checked ? bgBlock() : '') + resultsHTML(false) + bodyHTML() +
     (apa && (apa.cat || apa.body) ? `<div class="card"><h2>Tablas y figuras</h2>${apa.cat}${apa.body}${apaRefs()}</div>` : '') +
@@ -1463,7 +1465,7 @@ function doPrint(){
 }
 function copyResults(){
   const list = filtered(), n = list.length, c = catCounts(list);
-  const lines = ['WinOWAS — ' + (fileName || 'Estudio OWAS'), ...BG_LABELS.map((l,i) => `${l}: ${S.bg[i]||''}`), `Intervalo: ${S.interval} s`,
+  const lines = ['OWAS Web — ' + (fileName || 'Estudio OWAS'), ...BG_LABELS.map((l,i) => `${l}: ${S.bg[i]||''}`), `Intervalo: ${S.interval} s`,
     `Material: ${phaseFilter < 0 ? 'Todo el material' : phaseName(phaseFilter)}`, `Observaciones: ${n}`, '',
     'Categoría\tObs.\t%', ...c.map((x,i) => `${i+1} ${CATS[i].t}\t${x}\t${n ? (x/n*100).toFixed(1) : 0}`), '',
     'Parte\tPostura\tObs.\t%\tCategoría'];
@@ -1494,7 +1496,7 @@ $('#helpBox').innerHTML = `<h2>${ico('help')}Ayuda</h2>
 <div class="grid2">${PARTS.map(p => `<div><b>${p.name}</b>${p.opts.map((o,i) => `<div class="bp-name" style="margin:4px 0"><b>${i+1}</b>${pict(p.key, i+1)}${o}</div>`).join('')}</div>`).join('')}</div>
 <h3 style="margin-top:14px">Archivos</h3>
 <p class="small">Esta aplicación abre y guarda archivos <b>.OWS</b> del WinOWAS original, que contienen solo los datos. Los estudios con imágenes se guardan como proyecto <b>.owsp</b>, que incluye cada imagen. El video original no se guarda dentro del proyecto: conserve el archivo de video para volver a revisarlo. «Unir archivo» añade las observaciones de otro archivo al estudio actual. El trabajo se guarda además automáticamente en este navegador, pero conviene guardar el archivo. No se admiten los archivos del OWAS para DOS.</p>
-<p class="small muted">WinOWAS Web 3.4. Tablas de clasificación tomadas del WinOWAS original (Universidad Tecnológica de Tampere, 1996). Detección de posturas con MediaPipe Pose (© Google LLC, licencia Apache 2.0), incluido en este archivo.</p>`;
+<p class="small muted">OWAS Web 3.5 (antes WinOWAS Web). Tablas de clasificación tomadas del WinOWAS original (Universidad Tecnológica de Tampere, 1996). Detección de posturas con MediaPipe Pose (© Google LLC, licencia Apache 2.0), incluido en este archivo.</p>`;
 
 // ---- Inicio ----
 document.querySelector('.top .actions').addEventListener('click', e => {
