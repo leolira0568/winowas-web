@@ -178,7 +178,9 @@ td.n,th.n{text-align:right;font-variant-numeric:tabular-nums}
 .filter select{width:auto;min-width:220px}
 .empty{padding:30px;text-align:center;color:var(--ink-2)}
 .notice{background:var(--accent-soft);border:1px solid #bcd6f5;border-radius:8px;padding:10px 12px;margin-bottom:16px;display:flex;justify-content:space-between;gap:10px;align-items:center}
-.kbd{display:inline-block;border:1px solid var(--line);border-bottom-width:2px;border-radius:4px;padding:0 5px;font-size:12px;background:#fff}
+.kbd{display:inline-block;border:1px solid var(--line);border-bottom-width:2px;border-radius:4px;padding:0 5px;font-size:12px;background:#fff;color:var(--ink)}
+/* En los botones azules la tecla se ve en blanco sobre fondo translúcido, para que no parezca una casilla vacía */
+.btn.primary .kbd{background:rgba(255,255,255,.18);border-color:rgba(255,255,255,.6);color:#fff}
 #print{display:none}
 
 @media (max-width:760px){
@@ -290,7 +292,7 @@ td.n,th.n{text-align:right;font-variant-numeric:tabular-nums}
           <span class="tc" id="vTime">00:00.00 / 00:00.00</span>
           <label class="small">Velocidad <select id="vRate"><option value="0.25">0,25×</option><option value="0.5">0,5×</option><option value="1" selected>1×</option><option value="2">2×</option></select></label>
           <label class="small">Fotogramas/s <input type="number" id="vFps" min="1" max="240" value="30"></label>
-          <label class="small"><input type="checkbox" id="vAuto" checked> Al aceptar, saltar a la siguiente muestra</label>
+          <label class="small"><input type="checkbox" id="vAuto" checked autocomplete="off"> Al aceptar, saltar a la siguiente muestra</label>
         </div>
       </div>
       <div id="photoPane" hidden>
@@ -303,16 +305,16 @@ td.n,th.n{text-align:right;font-variant-numeric:tabular-nums}
         <div class="vctrl">
           <button class="btn icon-only" id="pPrev" data-icon="chevL" title="Fotografía anterior (←)" aria-label="Fotografía anterior"></button>
           <button class="btn icon-only" id="pNext" data-icon="chevR" title="Fotografía siguiente (→)" aria-label="Fotografía siguiente"></button>
-          <label class="small"><input type="checkbox" id="pAuto" checked> Al aceptar, pasar a la siguiente pendiente</label>
+          <label class="small"><input type="checkbox" id="pAuto" checked autocomplete="off"> Al aceptar, pasar a la siguiente pendiente</label>
         </div>
         <div class="thumbs" id="thumbs"></div>
       </div>
       <div class="detect">
         <div class="vctrl">
           <button class="btn primary" id="detectBtn" data-icon="scan">Detección automática de postura <span class="kbd">D</span></button>
-          <label class="small"><input type="checkbox" id="autoDetect" checked> Detectar al llegar a cada muestra o fotografía</label>
-          <label class="small"><input type="checkbox" id="showSubs" checked> Mostrar subtítulos con los datos de la detección</label>
-          <label class="small"><input type="checkbox" id="bakeSkel" checked> Grabar el esqueleto y los subtítulos en la imagen guardada</label>
+          <label class="small"><input type="checkbox" id="autoDetect" checked autocomplete="off"> Detectar al llegar a cada muestra o fotografía</label>
+          <label class="small"><input type="checkbox" id="showSubs" checked autocomplete="off"> Mostrar subtítulos con los datos de la detección</label>
+          <label class="small"><input type="checkbox" id="bakeSkel" checked autocomplete="off"> Grabar el esqueleto y los subtítulos en la imagen guardada</label>
         </div>
         <p class="small detect-status" id="detectStatus" role="status"></p>
         <details class="small">
@@ -722,7 +724,7 @@ function renderObserve(){
   $('#accept').disabled = !!nf;
   $('#repeat').disabled = !S.obs.length;
   $('#takeback').disabled = !S.obs.length;
-  $('#obsCount').textContent = `${S.obs.length} observaciones`;
+  $("#obsCount").textContent = S.obs.length === 1 ? "1 observación" : `${S.obs.length} observaciones`;
   $('#recent').innerHTML = S.obs.slice(-12).reverse().map(o => `<span title="${esc(phaseName(o.p))}">${o.img ? `<img src="${o.img}" alt="">` : ''}${codeStr(o)} · cat. ${catOf(o)}</span>`).join('');
   renderMarks(); renderThumbs();
 }
@@ -1492,7 +1494,7 @@ $('#helpBox').innerHTML = `<h2>${ico('help')}Ayuda</h2>
 <div class="grid2">${PARTS.map(p => `<div><b>${p.name}</b>${p.opts.map((o,i) => `<div class="bp-name" style="margin:4px 0"><b>${i+1}</b>${pict(p.key, i+1)}${o}</div>`).join('')}</div>`).join('')}</div>
 <h3 style="margin-top:14px">Archivos</h3>
 <p class="small">Esta aplicación abre y guarda archivos <b>.OWS</b> del WinOWAS original, que contienen solo los datos. Los estudios con imágenes se guardan como proyecto <b>.owsp</b>, que incluye cada imagen. El video original no se guarda dentro del proyecto: conserve el archivo de video para volver a revisarlo. «Unir archivo» añade las observaciones de otro archivo al estudio actual. El trabajo se guarda además automáticamente en este navegador, pero conviene guardar el archivo. No se admiten los archivos del OWAS para DOS.</p>
-<p class="small muted">WinOWAS Web 3.3. Tablas de clasificación tomadas del WinOWAS original (Universidad Tecnológica de Tampere, 1996). Detección de posturas con MediaPipe Pose (© Google LLC, licencia Apache 2.0), incluido en este archivo.</p>`;
+<p class="small muted">WinOWAS Web 3.4. Tablas de clasificación tomadas del WinOWAS original (Universidad Tecnológica de Tampere, 1996). Detección de posturas con MediaPipe Pose (© Google LLC, licencia Apache 2.0), incluido en este archivo.</p>`;
 
 // ---- Inicio ----
 document.querySelector('.top .actions').addEventListener('click', e => {

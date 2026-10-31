@@ -114,7 +114,8 @@ El script incrusta en base64 los archivos de [`vendor/mediapipe/`](vendor/mediap
 
 ## Versiones
 
-- **3.3**: subtítulos con los datos de la detección debajo del video o la foto, grabados también en la imagen guardada; los datos aparecen en la galería, el visor y una nueva tabla APA de mediciones.
+- **3.4**: la tecla de atajo de los botones azules ya no parece una casilla vacía; las casillas de detección no recuperan un estado anterior al recargar.
+- **[3.3](https://github.com/leolira0568/winowas-web/releases/tag/v3.3)**: subtítulos con los datos de la detección debajo del video o la foto, grabados también en la imagen guardada; los datos aparecen en la galería, el visor y una nueva tabla APA de mediciones.
 - **[3.2](https://github.com/leolira0568/winowas-web/releases/tag/v3.2)**: «Detectar al llegar a cada muestra o fotografía» activado por defecto; también detecta al cargar un video.
 - **[3.1](https://github.com/leolira0568/winowas-web/releases/tag/v3.1)**: tablas y figuras en formato APA 7 en pantalla y en la impresión; botón «Detección automática de postura» destacado en azul.
 - **[3.0](https://github.com/leolira0568/winowas-web/releases/tag/v3.0)**: detección automática de posturas con MediaPipe, incluida en el archivo para funcionar sin internet.
